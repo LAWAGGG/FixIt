@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">FixIt_v2</string>
+    <string-array name="roles_array">
+        <item>Admin</item>
+        <item>Technician</item>
+        <item>User</item>
+    </string-array>
+    <string-array name="payment_methods_array">
+        <item>Cash</item>
+        <item>QRIS</item>
+        <item>Bank Transfer</item>
+    </string-array>
+    <string-array name="bank_names_array">
+        <item>BCA</item>
+        <item>Mandiri</item>
+        <item>BNI</item>
+        <item>BRI</item>
+        <item>CIMB Niaga</item>
+    </string-array>
+</resources>

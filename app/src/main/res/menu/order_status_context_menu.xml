@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/status_processed"
+        android:title="Ubah Status: Diproses" />
+    <item
+        android:id="@+id/status_completed"
+        android:title="Ubah Status: Selesai" />
+    <item
+        android:id="@+id/status_cancelled"
+        android:title="Batalkan Pesanan" />
+</menu>
