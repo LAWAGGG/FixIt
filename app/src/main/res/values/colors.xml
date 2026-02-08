@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand Colors -->
+    <color name="primary">#6C63FF</color>
+    <color name="secondary">#00E5FF</color>
+
+    <!-- Background Colors -->
+    <color name="background_dark">#0B0F1A</color>
+    <color name="gradient_start_dark">#0B0F1A</color>
+    <color name="gradient_center_dark">#0D0D26</color>
+    <color name="gradient_end_dark">#0D1B3E</color>
+
+    <!-- Card & Component Colors -->
+    <color name="card_glass_background">#14FFFFFF</color> <!-- 8% white -->
+    <color name="card_glass_stroke">#33FFFFFF</color> <!-- 20% white -->
+
+    <!-- Text Colors -->
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary_dark">#A0A4B8</color>
+
+    <!-- Icon Colors -->
+    <color name="icon_active_dark">@color/primary</color>
+    <color name="icon_inactive_dark">#70758A</color>
+
+    <!-- Bottom Navigation Colors -->
+    <color name="bottom_nav_background">#13171B</color>
+    <color name="bottom_nav_item_active">#3B74C0</color>
+    <color name="bottom_nav_item_inactive">#FFFFFF</color>
+
+    <!-- Other Colors -->
+    <color name="rating_star_yellow">#FFD700</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

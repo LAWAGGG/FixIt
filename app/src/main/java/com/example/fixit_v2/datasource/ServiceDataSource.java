@@ -19,7 +19,7 @@ public class ServiceDataSource {
     private String[] allColumns = { 
         DatabaseHelper.KEY_ID, 
         DatabaseHelper.KEY_SERVICE_NAME, 
-        DatabaseHelper.KEY_DESCRIPTION, // Added
+        DatabaseHelper.KEY_DESCRIPTION, 
         DatabaseHelper.KEY_PRICE, 
         DatabaseHelper.KEY_TECHNICIAN_ID, 
         DatabaseHelper.KEY_CATEGORY_ID 
@@ -40,11 +40,10 @@ public class ServiceDataSource {
     public Service createService(String serviceName, String description, double price, int technicianId, int categoryId) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_SERVICE_NAME, serviceName);
-        values.put(DatabaseHelper.KEY_DESCRIPTION, description); // Added
+        values.put(DatabaseHelper.KEY_DESCRIPTION, description);
         values.put(DatabaseHelper.KEY_PRICE, price);
         values.put(DatabaseHelper.KEY_TECHNICIAN_ID, technicianId);
         values.put(DatabaseHelper.KEY_CATEGORY_ID, categoryId);
-        
         long insertId = database.insert(DatabaseHelper.TABLE_SERVICES, null, values);
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, DatabaseHelper.KEY_ID + " = " + insertId, null, null, null, null);
         cursor.moveToFirst();
@@ -53,10 +52,26 @@ public class ServiceDataSource {
         return newService;
     }
 
-    public void deleteService(int serviceId) {
-        database.delete(DatabaseHelper.TABLE_SERVICES, DatabaseHelper.KEY_ID + " = " + serviceId, null);
+    public List<Service> searchServicesByName(String keyword) {
+        List<Service> services = new ArrayList<>();
+        if (keyword == null || keyword.isEmpty()) {
+            return services;
+        }
+        String selection = DatabaseHelper.KEY_SERVICE_NAME + " LIKE ?";
+        String[] selectionArgs = { "%" + keyword + "%" };
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, selection, selectionArgs, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            services.add(cursorToService(cursor));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return services;
     }
 
+    // --- METHOD ADDED BACK ---
     public List<Service> getServicesByTechnician(int technicianId) {
         List<Service> services = new ArrayList<>();
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, 
@@ -77,7 +92,6 @@ public class ServiceDataSource {
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, 
                 DatabaseHelper.KEY_CATEGORY_ID + " = ?", 
                 new String[]{String.valueOf(categoryId)}, null, null, null);
-
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             services.add(cursorToService(cursor));
@@ -90,7 +104,6 @@ public class ServiceDataSource {
     public List<Service> getAllServices() {
         List<Service> services = new ArrayList<>();
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, null, null, null, null, null);
-
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Service service = cursorToService(cursor);
@@ -115,7 +128,6 @@ public class ServiceDataSource {
     }
 
     private Service cursorToService(Cursor cursor) {
-        // Order matches allColumns: ID, NAME, DESCRIPTION, PRICE, TECH_ID, CAT_ID
         return new Service(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3), cursor.getInt(4), cursor.getInt(5));
     }
 }

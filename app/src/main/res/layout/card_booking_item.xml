@@ -1,59 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FixIt.CardView.Glass"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/booking_card_background"> <!-- We need to create this drawable -->
+    android:layout_marginBottom="@dimen/spacing_medium">
 
-    <ImageView
-        android:id="@+id/imageViewServiceIcon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:src="@mipmap/ic_launcher" />
-
-    <LinearLayout
-        android:id="@+id/layout_text_details"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/imageViewServiceIcon"
-        android:layout_toStartOf="@+id/buttonMessage"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical">
+        android:background="@drawable/glass_card_background"
+        android:padding="@dimen/spacing_large">
+
+        <ImageView
+            android:id="@+id/imageViewServiceIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:src="@drawable/ic_cleaning" />
 
         <TextView
             android:id="@+id/textViewServiceName"
-            android:layout_width="wrap_content"
+            style="@style/TextAppearance.FixIt.Title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Service Name"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_medium"
+            app:layout_constraintStart_toEndOf="@id/imageViewServiceIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/buttonAction"
+            tools:text="Full Home Deep Cleaning" />
 
         <TextView
-            android:id="@+id/textViewTechnicianName"
-            android:layout_width="wrap_content"
+            android:id="@+id/textViewUserName"
+            style="@style/TextAppearance.FixIt.Body"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Technician Name"/>
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="@id/textViewServiceName"
+            app:layout_constraintTop_toBottomOf="@id/textViewServiceName"
+            app:layout_constraintEnd_toEndOf="@id/textViewServiceName"
+            tools:text="Booked by: John Doe" />
 
         <TextView
             android:id="@+id/textViewStatus"
+            style="@style/TextAppearance.FixIt.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status: Completed"
-            android:textStyle="italic"/>
+            android:layout_marginTop="4dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/textViewUserName"
+            app:layout_constraintTop_toBottomOf="@id/textViewUserName"
+            tools:text="Status: Pending" />
 
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/buttonAction"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:src="@drawable/ic_whatsapp"
+            app:tint="@color/primary" />
 
-    <Button
-        android:id="@+id/buttonMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:text="Message" />
-
-</RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

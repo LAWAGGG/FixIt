@@ -1,79 +1,85 @@
 package com.example.fixit_v2.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.fixit_v2.R;
+import com.example.fixit_v2.databinding.ActivityCreateReviewBinding;
 import com.example.fixit_v2.datasource.ReviewDataSource;
+import com.example.fixit_v2.datasource.ServiceDataSource;
+import com.example.fixit_v2.models.Service;
 
 public class CreateReviewActivity extends AppCompatActivity {
 
-    private RatingBar ratingBar;
-    private EditText editTextComment;
-    private Button buttonSubmitReview;
-
+    private ActivityCreateReviewBinding binding;
     private ReviewDataSource reviewDataSource;
+    private ServiceDataSource serviceDataSource;
     private int serviceId;
     private int userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_review);
+        binding = ActivityCreateReviewBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         serviceId = getIntent().getIntExtra("SERVICE_ID", -1);
-        userId = getIntent().getIntExtra("USER_ID", 1); // Fallback to 1 for now
+        userId = getIntent().getIntExtra("USER_ID", -1);
 
-        if (serviceId == -1) {
-            Toast.makeText(this, "Error: Service ID not found.", Toast.LENGTH_SHORT).show();
+        if (serviceId == -1 || userId == -1) {
+            Toast.makeText(this, "Error: Service or User ID not found.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        ratingBar = findViewById(R.id.ratingBar);
-        editTextComment = findViewById(R.id.editTextComment);
-        buttonSubmitReview = findViewById(R.id.buttonSubmitReview);
-
         reviewDataSource = new ReviewDataSource(this);
-        reviewDataSource.open();
+        serviceDataSource = new ServiceDataSource(this);
 
-        buttonSubmitReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submitReview();
-            }
-        });
+        setupToolbar();
+        loadServiceInfo();
+        binding.buttonSubmitReview.setOnClickListener(v -> submitReview());
+    }
+
+    private void setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+
+    private void loadServiceInfo() {
+        serviceDataSource.open();
+        Service service = serviceDataSource.getServiceById(serviceId);
+        if (service != null) {
+            binding.textViewServiceName.setText("Review for " + service.getServiceName());
+        }
+        serviceDataSource.close();
     }
 
     private void submitReview() {
-        int rating = (int) ratingBar.getRating();
-        String comment = editTextComment.getText().toString();
+        int rating = (int) binding.ratingBar.getRating();
+        String comment = binding.editTextComment.getText().toString();
 
         if (rating == 0) {
-            Toast.makeText(this, "Please provide a rating.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please provide a rating of at least 1 star.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        reviewDataSource.open();
         reviewDataSource.createReview(serviceId, userId, rating, comment);
+        reviewDataSource.close();
+
         Toast.makeText(this, "Review submitted successfully!", Toast.LENGTH_SHORT).show();
+        // Go back to the main dashboard and clear the activity stack
+        Intent intent = new Intent(this, UserDashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
     @Override
-    protected void onResume() {
-        reviewDataSource.open();
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        reviewDataSource.close();
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
+        // Ensure the data source is closed if the activity is destroyed.
+        // reviewDataSource.close(); // Already handled in submitReview
     }
 }

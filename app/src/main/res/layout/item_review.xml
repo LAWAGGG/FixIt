@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FixIt.CardView.Glass"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_medium">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/glass_card_background"
+        android:padding="@dimen/spacing_large">
+
+        <ImageView
+            android:id="@+id/imageViewReviewerAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_default_avatar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textViewReviewerName"
+            style="@style/TextAppearance.FixIt.Subtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            app:layout_constraintEnd_toStartOf="@+id/layoutRating"
+            app:layout_constraintStart_toEndOf="@+id/imageViewReviewerAvatar"
+            app:layout_constraintTop_toTopOf="@+id/imageViewReviewerAvatar"
+            tools:text="Jane Doe" />
+
+        <!-- This can be a simple series of ImageViews or a custom RatingBar view -->
+        <LinearLayout
+            android:id="@+id/layoutRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textViewReviewerName">
+            <!-- Placeholder for rating stars -->
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewReviewComment"
+            style="@style/TextAppearance.FixIt.Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/imageViewReviewerAvatar"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewReviewerAvatar"
+            tools:text="The service was excellent! The technician was professional and finished the job quickly. Highly recommended!" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

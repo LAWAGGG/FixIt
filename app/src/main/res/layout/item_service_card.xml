@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FixIt.CardView.Glass"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_medium">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/glass_card_background">
+
+        <ImageView
+            android:id="@+id/imageViewService"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <TextView
+            android:id="@+id/textViewServiceName"
+            style="@style/TextAppearance.FixIt.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/spacing_large"
+            android:layout_marginTop="@dimen/spacing_medium"
+            app:layout_constraintTop_toBottomOf="@id/imageViewService"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Full Home Deep Cleaning" />
+
+        <LinearLayout
+            android:id="@+id/layoutRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_large"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@id/textViewServiceName"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_star"
+                app:tint="@color/rating_star_yellow" />
+
+            <TextView
+                android:id="@+id/textViewRating"
+                style="@style/TextAppearance.FixIt.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                tools:text="4.8 (130 Reviews)" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewDiscountPrice"
+            style="@style/TextAppearance.FixIt.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_large"
+            android:textColor="@color/secondary"
+            app:layout_constraintTop_toTopOf="@id/layoutRating"
+            app:layout_constraintBottom_toBottomOf="@id/layoutRating"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Rp 599.000" />
+
+        <ImageView
+            android:id="@+id/imageViewProviderAvatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="@dimen/spacing_large"
+            app:layout_constraintTop_toBottomOf="@id/layoutRating"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:src="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/textViewProviderName"
+            style="@style/TextAppearance.FixIt.Subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            app:layout_constraintStart_toEndOf="@id/imageViewProviderAvatar"
+            app:layout_constraintTop_toTopOf="@+id/imageViewProviderAvatar"
+            app:layout_constraintBottom_toBottomOf="@id/imageViewProviderAvatar"
+            tools:text="CleanSweep Co." />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,77 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    android:fitsSystemWindows="true"
+    tools:context=".activities.ServiceDetailActivity">
 
-    <ScrollView
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="@color/background_dark"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:toolbarId="@+id/toolbar">
+
+            <ImageView
+                android:id="@+id/imageViewServiceImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                android:scaleType="centerCrop"
+                app:layout_collapseMode="parallax"
+                tools:src="@tools:sample/backgrounds/scenic" />
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/buttonOrderNow">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/spacing_large">
 
             <TextView
                 android:id="@+id/textViewServiceName"
+                style="@style/TextAppearance.FixIt.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nama Layanan"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                tools:text="Full Home Deep Cleaning" />
 
             <TextView
                 android:id="@+id/textViewTechnicianName"
+                style="@style/TextAppearance.FixIt.Subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ditawarkan oleh: Nama Teknisi" />
+                android:layout_marginTop="@dimen/spacing_small"
+                tools:text="by CleanSweep Co." />
 
             <TextView
                 android:id="@+id/textViewServicePrice"
+                style="@style/TextAppearance.FixIt.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Rp 0"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:textColor="@color/secondary"
+                tools:text="Rp 599.000" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                app:dividerColor="@color/card_glass_stroke" />
 
             <TextView
+                style="@style/TextAppearance.FixIt.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Deskripsi"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="Description" />
 
             <TextView
                 android:id="@+id/textViewServiceDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
+                style="@style/TextAppearance.FixIt.Body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Ulasan Pengguna"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/spacing_small"
+                tools:text="A comprehensive cleaning service that covers every nook and cranny of your home. We use eco-friendly products to ensure a safe and healthy environment for your family." />
 
-            <ListView
-                android:id="@+id/listViewReviews"
+            <TextView
+                style="@style/TextAppearance.FixIt.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xlarge"
+                android:text="Reviews" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewReviews"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="8dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_review"/>
 
         </LinearLayout>
-    </ScrollView>
 
-    <Button
-        android:id="@+id/buttonOrderNow"
-        android:layout_width="match_parent"
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabOrderNow"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:text="Pesan Sekarang" />
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacing_large"
+        android:text="Order Now"
+        app:icon="@drawable/ic_cart"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/primary"/>
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

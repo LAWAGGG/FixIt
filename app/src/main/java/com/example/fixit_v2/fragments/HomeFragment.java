@@ -1,31 +1,30 @@
 package com.example.fixit_v2.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.fixit_v2.R;
-import com.example.fixit_v2.activities.ServiceListActivity;
-import com.example.fixit_v2.activities.UserDashboardActivity;
 import com.example.fixit_v2.adapters.BestServiceAdapter;
+import com.example.fixit_v2.adapters.HomeCategoryAdapter;
+import com.example.fixit_v2.databinding.FragmentHomeBinding;
 import com.example.fixit_v2.datasource.ReviewDataSource;
 import com.example.fixit_v2.datasource.ServiceCategoryDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
 import com.example.fixit_v2.models.Service;
 import com.example.fixit_v2.models.ServiceCategory;
+import com.example.fixit_v2.utils.GridSpacingItemDecoration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,132 +32,175 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    private GridLayout gridLayoutCategories;
-    private LinearLayout layoutBestServices;
+    private FragmentHomeBinding binding;
     private ServiceCategoryDataSource serviceCategoryDataSource;
     private ServiceDataSource serviceDataSource;
     private ReviewDataSource reviewDataSource;
     private TechnicianDataSource technicianDataSource;
     private int userId;
+    private BestServiceAdapter bestServiceAdapter;
+    private boolean isCurrentlySearching = false;
 
-    private static class RatedService {
+    private static class RatedService implements Comparable<RatedService> {
         Service service;
         float rating;
-        RatedService(Service service, float rating) { this.service = service; this.rating = rating; }
+
+        RatedService(Service service, float rating) {
+            this.service = service;
+            this.rating = rating;
+        }
+
+        @Override
+        public int compareTo(RatedService other) {
+            return Float.compare(other.rating, this.rating); // Sort descending
+        }
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
 
-        SharedPreferences preferences = getActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
+        SharedPreferences preferences = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
         userId = preferences.getInt("user_id", -1);
-
-        gridLayoutCategories = view.findViewById(R.id.gridLayoutCategories);
-        layoutBestServices = view.findViewById(R.id.layoutBestServices);
 
         serviceCategoryDataSource = new ServiceCategoryDataSource(getContext());
         serviceDataSource = new ServiceDataSource(getContext());
         reviewDataSource = new ReviewDataSource(getContext());
         technicianDataSource = new TechnicianDataSource(getContext());
 
-        return view;
+        setupRecyclerViews();
+        setupSearch();
+        return binding.getRoot();
+    }
+
+    private void setupRecyclerViews() {
+        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.spacing_small);
+        binding.recyclerViewCategories.setLayoutManager(new GridLayoutManager(getContext(), 4));
+        if (binding.recyclerViewCategories.getItemDecorationCount() == 0) {
+            binding.recyclerViewCategories.addItemDecoration(new GridSpacingItemDecoration(4, spacingInPixels, true));
+        }
+        binding.recyclerViewBestServices.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.recyclerViewBestServices.setNestedScrollingEnabled(false);
+    }
+
+    private void setupSearch() {
+        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                binding.searchView.clearFocus();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty() && isCurrentlySearching) {
+                    resetToDefaultView();
+                } else if (!newText.isEmpty()) {
+                    performSearch(newText);
+                }
+                return true;
+            }
+        });
+
+        // Handles the 'X' button click on some devices
+        binding.searchView.findViewById(androidx.appcompat.R.id.search_close_btn).setOnClickListener(v -> {
+             if (binding.searchView.getQuery().length() == 0) {
+                resetToDefaultView();
+            }
+        });
+    }
+
+    private void performSearch(String keyword) {
+        isCurrentlySearching = true;
+        binding.recyclerViewCategories.setVisibility(View.GONE);
+        binding.bestServicesTitle.setText("Search Results");
+
+        List<Service> searchResult = serviceDataSource.searchServicesByName(keyword);
+        updateServiceListWithRatings(searchResult, false); // false = don't limit results
+    }
+
+    private void resetToDefaultView() {
+        isCurrentlySearching = false;
+        if (binding == null) return;
+        binding.recyclerViewCategories.setVisibility(View.VISIBLE);
+        binding.bestServicesTitle.setText("Best Services");
+        populateBestServices();
+    }
+
+    private void updateServiceListWithRatings(List<Service> services, boolean limitResults) {
+        List<RatedService> ratedServices = new ArrayList<>();
+        for (Service service : services) {
+            float avgRating = reviewDataSource.getAverageRating(service.getId());
+            ratedServices.add(new RatedService(service, avgRating));
+        }
+
+        Collections.sort(ratedServices);
+
+        List<Service> sortedServices = new ArrayList<>();
+        for (RatedService rs : ratedServices) {
+            sortedServices.add(rs.service);
+        }
+
+        List<Service> finalList = sortedServices;
+        if (limitResults && sortedServices.size() > 5) {
+            finalList = sortedServices.subList(0, 5);
+        }
+
+        bestServiceAdapter = new BestServiceAdapter(getContext(), finalList, technicianDataSource, reviewDataSource);
+        binding.recyclerViewBestServices.setAdapter(bestServiceAdapter);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        serviceCategoryDataSource.open();
         serviceDataSource.open();
-        reviewDataSource.open();
         technicianDataSource.open();
+        reviewDataSource.open();
+        serviceCategoryDataSource.open();
         
-        populateCategoriesGrid();
-        populateBestServices();
+        populateCategories();
+        if (!isCurrentlySearching) {
+            populateBestServices();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        serviceCategoryDataSource.close();
         serviceDataSource.close();
-        reviewDataSource.close();
         technicianDataSource.close();
+        reviewDataSource.close();
+        serviceCategoryDataSource.close();
     }
 
-    private void populateCategoriesGrid() {
-        gridLayoutCategories.removeAllViews();
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    private void populateCategories() {
         List<ServiceCategory> allCategories = serviceCategoryDataSource.getAllServiceCategories();
         List<ServiceCategory> displayedCategories = new ArrayList<>();
-
-        int limit = Math.min(allCategories.size(), 8);
+        int limit = Math.min(allCategories.size(), 7);
         if (limit > 0) {
             displayedCategories.addAll(allCategories.subList(0, limit));
         }
-
         displayedCategories.add(new ServiceCategory(-99, "All"));
-
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        for (ServiceCategory category : displayedCategories) {
-            View itemView = inflater.inflate(R.layout.grid_item_category, gridLayoutCategories, false);
-            
-            ImageView icon = itemView.findViewById(R.id.imageViewCategoryIcon);
-            TextView name = itemView.findViewById(R.id.textViewCategoryName);
-            name.setText(category.getCategoryName());
-
-            if (category.getId() == -99) {
-                icon.setImageResource(android.R.drawable.ic_menu_sort_by_size);
-                itemView.setOnClickListener(v -> {
-                    if (getActivity() instanceof UserDashboardActivity) {
-                        ((UserDashboardActivity) getActivity()).navigateToCategories();
-                    }
-                });
-            } else {
-                icon.setImageResource(R.mipmap.ic_launcher);
-                itemView.setOnClickListener(v -> {
-                    Intent intent = new Intent(getActivity(), ServiceListActivity.class);
-                    intent.putExtra("CATEGORY_ID", category.getId());
-                    intent.putExtra("USER_ID", userId);
-                    startActivity(intent);
-                });
-            }
-            
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(8, 8, 8, 8);
-            itemView.setLayoutParams(params);
-            
-            gridLayoutCategories.addView(itemView);
-        }
+        HomeCategoryAdapter adapter = new HomeCategoryAdapter(getContext(), displayedCategories, userId);
+        binding.recyclerViewCategories.setAdapter(adapter);
     }
 
     private void populateBestServices() {
-        layoutBestServices.removeAllViews();
-        List<Service> allServices = serviceDataSource.getAllServices();
-        List<RatedService> ratedServices = new ArrayList<>();
-
-        for (Service service : allServices) {
-            float avgRating = reviewDataSource.getAverageRating(service.getId());
-            if (avgRating > 0) {
-                ratedServices.add(new RatedService(service, avgRating));
+        List<Service> servicesFromDb = serviceDataSource.getAllServices();
+        List<Service> highRatedServices = new ArrayList<>();
+        for (Service service : servicesFromDb) {
+            if (reviewDataSource.getAverageRating(service.getId()) > 3.5) {
+                highRatedServices.add(service);
             }
         }
-
-        Collections.sort(ratedServices, (o1, o2) -> Float.compare(o2.rating, o1.rating));
-
-        List<Service> bestServices = new ArrayList<>();
-        for (int i = 0; i < Math.min(ratedServices.size(), 5); i++) {
-            bestServices.add(ratedServices.get(i).service);
-        }
-
-        BestServiceAdapter bestServiceAdapter = new BestServiceAdapter(getContext(), bestServices, technicianDataSource, reviewDataSource);
-        
-        for (int i = 0; i < bestServiceAdapter.getCount(); i++) {
-            View cardView = bestServiceAdapter.getView(i, null, layoutBestServices);
-            layoutBestServices.addView(cardView);
-        }
+        updateServiceListWithRatings(highRatedServices, true);
     }
 }

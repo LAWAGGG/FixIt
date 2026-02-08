@@ -23,14 +23,13 @@
         <activity android:name=".activities.LoginActivity" android:exported="false" />
         <activity android:name=".activities.RegisterActivity" android:exported="false" />
         <activity android:name=".activities.AdminDashboardActivity" android:exported="false" />
-        <activity android:name=".activities.AdminTechnicianActivity" android:exported="false" />
-        <activity android:name=".activities.AdminServiceCategoryActivity" android:exported="false" />
         <activity android:name=".activities.UserDashboardActivity" android:exported="true" />
         <activity android:name=".activities.CreateOrderActivity" android:exported="false" />
         <activity android:name=".activities.TechnicianDashboardActivity" android:exported="false" />
         <activity android:name=".activities.CreateReviewActivity" android:exported="false" />
         <activity android:name=".activities.ServiceListActivity" android:exported="false" />
         <activity android:name=".activities.ServiceDetailActivity" android:exported="false" />
+        <activity android:name=".activities.CreateServiceActivity" android:exported="false" />
     </application>
 
 </manifest>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_admin_technicians"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Manage Technicians" />
+
+    <item
+        android:id="@+id/nav_admin_categories"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Manage Categories" />
+
+    <item
+        android:id="@+id/nav_admin_profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Profile" />
+
+</menu>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+    <dimen name="spacing_xlarge">20dp</dimen>
+
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_medium">20dp</dimen>
+    <dimen name="corner_radius_large">28dp</dimen>
+
+    <!-- Card Stroke -->
+    <dimen name="card_stroke_width">1dp</dimen>
+</resources>

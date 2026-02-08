@@ -1,114 +1,101 @@
 package com.example.fixit_v2.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.fixit_v2.R;
-import com.example.fixit_v2.adapters.ReviewListAdapter;
+import com.example.fixit_v2.adapters.ReviewAdapter;
+import com.example.fixit_v2.databinding.ActivityServiceDetailBinding;
 import com.example.fixit_v2.datasource.ReviewDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
-import com.example.fixit_v2.datasource.UserDataSource;
 import com.example.fixit_v2.models.Review;
 import com.example.fixit_v2.models.Service;
 import com.example.fixit_v2.models.Technician;
 
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
 public class ServiceDetailActivity extends AppCompatActivity {
 
-    private TextView textViewServiceName, textViewTechnicianName, textViewServicePrice, textViewServiceDescription;
-    private ListView listViewReviews;
-    private Button buttonOrderNow;
-
+    private ActivityServiceDetailBinding binding;
     private ServiceDataSource serviceDataSource;
     private TechnicianDataSource technicianDataSource;
     private ReviewDataSource reviewDataSource;
-    private UserDataSource userDataSource; // Added
-
-    private Service currentService;
-    private int userId;
+    private ReviewAdapter reviewAdapter;
+    private int serviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_service_detail);
+        binding = ActivityServiceDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        SharedPreferences preferences = getSharedPreferences("user_session", Context.MODE_PRIVATE);
-        userId = preferences.getInt("user_id", -1);
-
-        int serviceId = getIntent().getIntExtra("SERVICE_ID", -1);
+        serviceId = getIntent().getIntExtra("SERVICE_ID", -1);
         if (serviceId == -1) {
             Toast.makeText(this, "Service not found!", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Initialize Views
-        textViewServiceName = findViewById(R.id.textViewServiceName);
-        textViewTechnicianName = findViewById(R.id.textViewTechnicianName);
-        textViewServicePrice = findViewById(R.id.textViewServicePrice);
-        textViewServiceDescription = findViewById(R.id.textViewServiceDescription);
-        listViewReviews = findViewById(R.id.listViewReviews);
-        buttonOrderNow = findViewById(R.id.buttonOrderNow);
-
-        // Initialize DataSources
         serviceDataSource = new ServiceDataSource(this);
         technicianDataSource = new TechnicianDataSource(this);
         reviewDataSource = new ReviewDataSource(this);
-        userDataSource = new UserDataSource(this); // Added
 
-        // Load Data
-        // Open Dbs in onResume
+        setupToolbar();
+        setupRecyclerView();
+        setupFab();
+    }
 
-        buttonOrderNow.setOnClickListener(v -> {
-            Intent intent = new Intent(ServiceDetailActivity.this, CreateOrderActivity.class);
-            intent.putExtra("SERVICE_ID", currentService.getId());
+    private void setupToolbar() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+
+    private void setupRecyclerView() {
+        binding.recyclerViewReviews.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerViewReviews.setNestedScrollingEnabled(false);
+    }
+
+    private void setupFab() {
+        binding.fabOrderNow.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateOrderActivity.class);
+            intent.putExtra("SERVICE_ID", serviceId);
             startActivity(intent);
         });
     }
 
-    private void loadData() {
-        int serviceId = getIntent().getIntExtra("SERVICE_ID", -1);
-        currentService = serviceDataSource.getServiceById(serviceId);
-
-        if (currentService == null) {
+    private void loadServiceDetails() {
+        Service service = serviceDataSource.getServiceById(serviceId);
+        if (service == null) {
             Toast.makeText(this, "Failed to load service details.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        populateServiceDetails();
-        populateReviews();
-    }
+        binding.toolbarLayout.setTitle(service.getServiceName());
+        binding.textViewServiceName.setText(service.getServiceName());
+        binding.textViewServiceDescription.setText(service.getDescription());
+        binding.textViewServicePrice.setText(String.format(Locale.GERMAN, "Rp %,d", (long) service.getPrice()));
 
-    private void populateServiceDetails() {
-        Technician technician = technicianDataSource.getTechnicianById(currentService.getTechnicianId());
+        Technician technician = technicianDataSource.getTechnicianById(service.getTechnicianId());
+        if (technician != null) {
+            binding.textViewTechnicianName.setText("by " + technician.getName());
+        }
 
-        textViewServiceName.setText(currentService.getServiceName());
-        textViewServiceDescription.setText(currentService.getDescription());
-        textViewTechnicianName.setText("Ditawarkan oleh: " + (technician != null ? technician.getName() : "Unknown"));
+        // Load images with Picasso/Glide here
+        // Picasso.get().load(service.getImageUrl()).into(binding.imageViewServiceImage);
 
-        NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
-        format.setMaximumFractionDigits(0);
-        textViewServicePrice.setText(format.format(currentService.getPrice()));
-    }
-
-    private void populateReviews() {
-        List<Review> reviews = reviewDataSource.getReviewsByServiceId(currentService.getId());
-        // Pass the opened UserDataSource to the adapter
-        ReviewListAdapter adapter = new ReviewListAdapter(this, reviews, userDataSource);
-        listViewReviews.setAdapter(adapter);
+        List<Review> reviews = reviewDataSource.getReviewsByServiceId(serviceId);
+        reviewAdapter = new ReviewAdapter(this, reviews);
+        binding.recyclerViewReviews.setAdapter(reviewAdapter);
     }
 
     @Override
@@ -117,8 +104,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
         serviceDataSource.open();
         technicianDataSource.open();
         reviewDataSource.open();
-        userDataSource.open(); // Added
-        loadData(); // Load data when activity is resumed
+        loadServiceDetails();
     }
 
     @Override
@@ -127,6 +113,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
         serviceDataSource.close();
         technicianDataSource.close();
         reviewDataSource.close();
-        userDataSource.close(); // Added
+        if (reviewAdapter != null) {
+            reviewAdapter.closeDataSource(); // Important to close the adapter's data source
+        }
     }
 }

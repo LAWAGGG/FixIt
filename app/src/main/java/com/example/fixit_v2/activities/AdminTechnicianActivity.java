@@ -103,7 +103,7 @@ public class AdminTechnicianActivity extends AppCompatActivity {
                         return;
                     }
 
-                    User newUser = userDataSource.createUser(username, password, email, "Technician");
+                    User newUser = userDataSource.createUser(username, password, email, phone, "Technician");
                     if (newUser != null) {
                         technicianDataSource.createTechnician(newUser.getId(), name, phone);
                     } else {

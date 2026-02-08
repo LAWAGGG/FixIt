@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,45 +17,63 @@ import androidx.fragment.app.Fragment;
 
 import com.example.fixit_v2.R;
 import com.example.fixit_v2.activities.LoginActivity;
+import com.example.fixit_v2.databinding.FragmentProfileBinding;
+import com.example.fixit_v2.databinding.ItemProfileMenuBinding;
 import com.example.fixit_v2.datasource.UserDataSource;
 import com.example.fixit_v2.models.User;
 
 public class ProfileFragment extends Fragment {
 
-    private TextView textViewUsername;
-    private Button buttonLogout;
+    private FragmentProfileBinding binding;
     private UserDataSource userDataSource;
     private int userId;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        binding = FragmentProfileBinding.inflate(inflater, container, false);
 
-        SharedPreferences preferences = getActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
+        SharedPreferences preferences = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
         userId = preferences.getInt("user_id", -1);
-
-        textViewUsername = view.findViewById(R.id.textViewUsername);
-        buttonLogout = view.findViewById(R.id.buttonLogout);
         userDataSource = new UserDataSource(getContext());
 
-        buttonLogout.setOnClickListener(v -> logout());
-
-        return view;
+        setupMenu();
+        return binding.getRoot();
     }
 
-    private void displayUserInfo(){
+    private void displayUserInfo() {
         userDataSource.open();
         User currentUser = userDataSource.getUserById(userId);
         if (currentUser != null) {
-            textViewUsername.setText("Username: " + currentUser.getUsername());
+            binding.textViewUsername.setText(currentUser.getUsername());
+            // Here you would load the user's avatar image into binding.imageViewAvatar
+            // using a library like Glide or Picasso.
         }
         userDataSource.close();
     }
 
+    private void setupMenu() {
+        // Setup menu item texts and icons
+        setupMenuItem(binding.menuEditProfile, R.drawable.ic_edit, "Edit Profile");
+        setupMenuItem(binding.menuPayment, R.drawable.ic_payment, "Payment");
+        setupMenuItem(binding.menuSettings, R.drawable.ic_settings, "Settings");
+        setupMenuItem(binding.menuLogout, R.drawable.ic_logout, "Logout");
+
+        // Setup click listeners
+        binding.menuEditProfile.getRoot().setOnClickListener(v -> showToast("Edit Profile clicked"));
+        binding.menuPayment.getRoot().setOnClickListener(v -> showToast("Payment clicked"));
+        binding.menuSettings.getRoot().setOnClickListener(v -> showToast("Settings clicked"));
+        binding.menuLogout.getRoot().setOnClickListener(v -> logout());
+    }
+
+    private void setupMenuItem(ItemProfileMenuBinding menuBinding, int iconRes, String title) {
+        menuBinding.imageViewMenuIcon.setImageResource(iconRes);
+        menuBinding.textViewMenuTitle.setText(title);
+    }
+
     private void logout() {
         // Clear SharedPreferences
-        SharedPreferences preferences = getActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
+        SharedPreferences preferences = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE);
         preferences.edit().clear().apply();
 
         Toast.makeText(getContext(), "You have been logged out.", Toast.LENGTH_SHORT).show();
@@ -63,12 +81,22 @@ public class ProfileFragment extends Fragment {
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        getActivity().finish();
+        requireActivity().finish();
+    }
+    
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         displayUserInfo();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null; // Avoid memory leaks
     }
 }

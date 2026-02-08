@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Base.Theme.FixIt_v2" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:windowBackground">@drawable/gradient_background</item>
+        <item name="android:textViewStyle">@style/Widget.FixIt.TextView</item>
+        <item name="alertDialogTheme">@style/AlertDialogTheme</item> <!-- Add this -->
+    </style>
+
+    <!-- Text Appearances -->
+    <style name="TextAppearance.FixIt.Title" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textColor">@color/text_primary_dark</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.FixIt.Subtitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textColor">@color/text_secondary_dark</item>
+    </style>
+
+    <style name="TextAppearance.FixIt.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">@color/text_secondary_dark</item>
+        <item name="android:alpha">0.8</item>
+    </style>
+
+    <!-- Widget Styles -->
+    <style name="Widget.FixIt.TextView" parent="Widget.AppCompat.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.FixIt.Body</item>
+    </style>
+
+    <style name="Widget.FixIt.CardView.Glass" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">@dimen/corner_radius_large</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@android:color/transparent</item> <!-- Important for the custom background -->
+    </style>
+
+    <!-- Rating Bar Style -->
+    <style name="RatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/icon_inactive_dark</item>
+        <item name="colorControlActivated">@color/rating_star_yellow</item>
+    </style>
+
+    <!-- AlertDialog Style -->
+    <style name="AlertDialogTheme" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:windowBackground">@drawable/glass_card_background</item>
+        <item name="colorSurface">@android:color/transparent</item>
+        <item name="android:textColorPrimary">@color/text_primary_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialog.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialog.Button</item>
+    </style>
+
+    <style name="AlertDialog.Button" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+</resources>

@@ -16,14 +16,7 @@ public class OrderDataSource {
 
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
-    private String[] allColumns = { 
-        DatabaseHelper.KEY_ID, 
-        DatabaseHelper.KEY_USER_ID, 
-        DatabaseHelper.KEY_SERVICE_ID, 
-        DatabaseHelper.KEY_ADDRESS, 
-        DatabaseHelper.KEY_ORDER_DATE, 
-        DatabaseHelper.KEY_STATUS 
-    };
+    private String[] allColumns = { DatabaseHelper.KEY_ID, DatabaseHelper.KEY_USER_ID, DatabaseHelper.KEY_SERVICE_ID, DatabaseHelper.KEY_ADDRESS, DatabaseHelper.KEY_ORDER_DATE, DatabaseHelper.KEY_STATUS };
 
     public OrderDataSource(Context context) {
         dbHelper = new DatabaseHelper(context);
@@ -37,22 +30,17 @@ public class OrderDataSource {
         dbHelper.close();
     }
 
-    public Order createOrder(int userId, int serviceId, String address, String orderDate, String status) {
+    public void createOrder(int userId, int serviceId, String address, String orderDate, String status) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_USER_ID, userId);
         values.put(DatabaseHelper.KEY_SERVICE_ID, serviceId);
         values.put(DatabaseHelper.KEY_ADDRESS, address);
         values.put(DatabaseHelper.KEY_ORDER_DATE, orderDate);
         values.put(DatabaseHelper.KEY_STATUS, status);
-        
-        long insertId = database.insert(DatabaseHelper.TABLE_ORDERS, null, values);
-        Cursor cursor = database.query(DatabaseHelper.TABLE_ORDERS, allColumns, DatabaseHelper.KEY_ID + " = " + insertId, null, null, null, null);
-        cursor.moveToFirst();
-        Order newOrder = cursorToOrder(cursor);
-        cursor.close();
-        return newOrder;
+        database.insert(DatabaseHelper.TABLE_ORDERS, null, values);
     }
-    
+
+    // --- NEW METHOD TO UPDATE STATUS ---
     public int updateOrderStatus(int orderId, String newStatus) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_STATUS, newStatus);
@@ -61,10 +49,7 @@ public class OrderDataSource {
 
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orders = new ArrayList<>();
-        Cursor cursor = database.query(DatabaseHelper.TABLE_ORDERS, allColumns, 
-                DatabaseHelper.KEY_USER_ID + " = ?", 
-                new String[]{String.valueOf(userId)}, null, null, null);
-
+        Cursor cursor = database.query(DatabaseHelper.TABLE_ORDERS, allColumns, DatabaseHelper.KEY_USER_ID + " = ?", new String[]{String.valueOf(userId)}, null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             orders.add(cursorToOrder(cursor));
@@ -73,25 +58,21 @@ public class OrderDataSource {
         cursor.close();
         return orders;
     }
-
+    
     public List<Order> getOrdersByTechnicianId(int technicianId) {
-        List<Order> orders = new ArrayList<>();
-        String query = "SELECT o." + DatabaseHelper.KEY_ID + ", o." + DatabaseHelper.KEY_USER_ID 
-                + ", o." + DatabaseHelper.KEY_SERVICE_ID + ", o." + DatabaseHelper.KEY_ADDRESS 
-                + ", o." + DatabaseHelper.KEY_ORDER_DATE + ", o." + DatabaseHelper.KEY_STATUS
-                + " FROM " + DatabaseHelper.TABLE_ORDERS + " o JOIN " + DatabaseHelper.TABLE_SERVICES + " s ON o."
-                + DatabaseHelper.KEY_SERVICE_ID + " = s." + DatabaseHelper.KEY_ID + " WHERE s."
-                + DatabaseHelper.KEY_TECHNICIAN_ID + " = ?";
+         List<Order> orders = new ArrayList<>();
+         String query = "SELECT o.* FROM " + DatabaseHelper.TABLE_ORDERS + " o " +
+                 "INNER JOIN " + DatabaseHelper.TABLE_SERVICES + " s ON o." + DatabaseHelper.KEY_SERVICE_ID + " = s." + DatabaseHelper.KEY_ID +
+                 " WHERE s." + DatabaseHelper.KEY_TECHNICIAN_ID + " = ?";
 
-        Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(technicianId)});
-        
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            orders.add(cursorToOrder(cursor));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return orders;
+         Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(technicianId)});
+         cursor.moveToFirst();
+         while (!cursor.isAfterLast()) {
+             orders.add(cursorToOrder(cursor));
+             cursor.moveToNext();
+         }
+         cursor.close();
+         return orders;
     }
 
     private Order cursorToOrder(Cursor cursor) {

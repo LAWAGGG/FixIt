@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         userDataSource.open();
         String username = editTextUsername.getText().toString();
         String password = editTextPassword.getText().toString();
-        User user = userDataSource.login(username, password);
+        User user = userDataSource.checkUser(username, password);
         userDataSource.close(); // Close immediately after use
 
         if (user != null) {
