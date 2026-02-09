@@ -39,7 +39,7 @@ public class HomeFragment extends Fragment {
     private TechnicianDataSource technicianDataSource;
     private int userId;
     private BestServiceAdapter bestServiceAdapter;
-    private boolean isCurrentlySearching = false;
+    private boolean isCurrentlySearching = false; // Flag to prevent infinite loop
 
     private static class RatedService implements Comparable<RatedService> {
         Service service;
@@ -77,7 +77,7 @@ public class HomeFragment extends Fragment {
     private void setupRecyclerViews() {
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.spacing_small);
         binding.recyclerViewCategories.setLayoutManager(new GridLayoutManager(getContext(), 4));
-        if (binding.recyclerViewCategories.getItemDecorationCount() == 0) {
+        if (binding.recyclerViewCategories.getItemDecorationCount() == 0) { // Prevent adding multiple times
             binding.recyclerViewCategories.addItemDecoration(new GridSpacingItemDecoration(4, spacingInPixels, true));
         }
         binding.recyclerViewBestServices.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -95,19 +95,14 @@ public class HomeFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty() && isCurrentlySearching) {
-                    resetToDefaultView();
-                } else if (!newText.isEmpty()) {
+                if (newText.isEmpty()) {
+                    if (isCurrentlySearching) {
+                        resetToDefaultView();
+                    }
+                } else {
                     performSearch(newText);
                 }
                 return true;
-            }
-        });
-
-        // Handles the 'X' button click on some devices
-        binding.searchView.findViewById(androidx.appcompat.R.id.search_close_btn).setOnClickListener(v -> {
-             if (binding.searchView.getQuery().length() == 0) {
-                resetToDefaultView();
             }
         });
     }
@@ -118,7 +113,7 @@ public class HomeFragment extends Fragment {
         binding.bestServicesTitle.setText("Search Results");
 
         List<Service> searchResult = serviceDataSource.searchServicesByName(keyword);
-        updateServiceListWithRatings(searchResult, false); // false = don't limit results
+        updateServiceListWithRatings(searchResult, false);
     }
 
     private void resetToDefaultView() {

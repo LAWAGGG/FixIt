@@ -1,62 +1,100 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Widget.FixIt.CardView.Glass"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_medium">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/glass_card_background"
-        android:padding="@dimen/spacing_large">
+        android:padding="16dp">
 
+        <!-- Baris Atas: Nama Layanan dan Status -->
         <TextView
             android:id="@+id/textViewServiceName"
-            style="@style/TextAppearance.FixIt.Title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Perbaikan AC Split"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textColor="@color/black"
             app:layout_constraintEnd_toStartOf="@+id/textViewStatus"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="AC Repair &amp; Service" />
-
-        <TextView
-            android:id="@+id/textViewProviderName"
-            style="@style/TextAppearance.FixIt.Body"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewServiceName"
-            tools:text="by Cooling Experts" />
-
-        <TextView
-            android:id="@+id/textViewBookingDate"
-            style="@style/TextAppearance.FixIt.Body"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            android:alpha="0.7"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewProviderName"
-            tools:text="On 25 Dec 2024, 14:00" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/textViewStatus"
-            style="@style/TextAppearance.FixIt.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/badge_background_completed"
-            android:paddingHorizontal="10dp"
+            android:background="@drawable/badge_background_pending"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="4dp"
-            android:textColor="@color/white"
+            android:text="In Progress"
+            android:textColor="@color/black"
+            android:textSize="12sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Completed" />
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Baris Tengah: Nama Penyedia Jasa -->
+        <TextView
+            android:id="@+id/textViewProviderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="by Budi Elektronik"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewServiceName" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewProviderName" />
+
+
+        <!-- Baris Bawah: Tanggal Booking dan Tombol Aksi -->
+        <TextView
+            android:id="@+id/textViewBookingDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="On 28 Jun 2024, 14:30"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <!-- INI BAGIAN PALING PENTING -->
+        <!-- Tombol Aksi (WhatsApp) yang akan kita kontrol visibilitasnya -->
+        <ImageButton
+            android:id="@+id/buttonAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Action Button"
+            android:src="@drawable/ic_whatsapp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:tint="@color/design_default_color_primary" />
+        <!-- Pastikan ic_whatsapp ada di drawable dan ganti tint jika perlu -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</com.google.android.material.card.MaterialCardView>
+
+</androidx.cardview.widget.CardView>

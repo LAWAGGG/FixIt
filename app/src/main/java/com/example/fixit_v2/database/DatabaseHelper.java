@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteStatement;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "FixIt.db";
-    private static final int DATABASE_VERSION = 19; // Final Seeder Version
+    private static final int DATABASE_VERSION = 20; // Final Seeder Version
 
     public static final String TABLE_USERS = "users";
     public static final String TABLE_TECHNICIANS = "technicians";
@@ -83,63 +83,135 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private void seedData(SQLiteDatabase db) {
         db.beginTransaction();
         try {
-            // ========== USERS ========== 
-            // Admin: 1, Techs: 2-21, Users: 22-41
-            String sqlUser = "INSERT INTO " + TABLE_USERS + " (username, password, email, role) VALUES (?, ?, ?, ?);";
-            SQLiteStatement stmtUser = db.compileStatement(sqlUser);
-            stmtUser.bindString(1, "admin"); stmtUser.bindString(2, "admin123"); stmtUser.bindString(3, "admin@fixit.com"); stmtUser.bindString(4, "Admin"); stmtUser.executeInsert();
+
+            // ================= USERS =================
+            String sqlUser = "INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)";
+            SQLiteStatement userStmt = db.compileStatement(sqlUser);
+
+            // Admin
+            userStmt.bindString(1, "admin");
+            userStmt.bindString(2, "admin123");
+            userStmt.bindString(3, "admin@fixit.com");
+            userStmt.bindString(4, "Admin");
+            userStmt.executeInsert();
+
+            // 20 Technicians
             for (int i = 1; i <= 20; i++) {
-                stmtUser.clearBindings(); stmtUser.bindString(1, "tech" + i); stmtUser.bindString(2, "tech123"); stmtUser.bindString(3, "tech"+i+"@fixit.com"); stmtUser.bindString(4, "Technician"); stmtUser.executeInsert();
-                stmtUser.clearBindings(); stmtUser.bindString(1, "user" + i); stmtUser.bindString(2, "user123"); stmtUser.bindString(3, "user"+i+"@example.com"); stmtUser.bindString(4, "User"); stmtUser.executeInsert();
+                userStmt.clearBindings();
+                userStmt.bindString(1, "tech" + i);
+                userStmt.bindString(2, "tech123");
+                userStmt.bindString(3, "tech" + i + "@fixit.com");
+                userStmt.bindString(4, "Technician");
+                userStmt.executeInsert();
             }
-            stmtUser.close();
 
-            // ========== TECHNICIANS ========== 
-            String sqlTech = "INSERT INTO " + TABLE_TECHNICIANS + " (user_id, name, phone_number, earnings) VALUES (?, ?, ?, ?);";
-            SQLiteStatement stmtTech = db.compileStatement(sqlTech);
-            String[] techNames = {"Budi Santoso", "Joko Susilo", "Siti Aminah", "Agus Wijaya", "Dewi Lestari"};
-            for (int i = 0; i < techNames.length; i++) {
-                stmtTech.clearBindings(); stmtTech.bindLong(1, 2 + i); stmtTech.bindString(2, techNames[i]); stmtTech.bindString(3, "0812345678" + i); stmtTech.bindDouble(4, 0); stmtTech.executeInsert();
+            // 30 Users
+            for (int i = 1; i <= 30; i++) {
+                userStmt.clearBindings();
+                userStmt.bindString(1, "user" + i);
+                userStmt.bindString(2, "user123");
+                userStmt.bindString(3, "user" + i + "@mail.com");
+                userStmt.bindString(4, "User");
+                userStmt.executeInsert();
             }
-            stmtTech.close();
+            userStmt.close();
 
-            // ========== SERVICE CATEGORIES ========== 
-            String sqlCat = "INSERT INTO " + TABLE_SERVICE_CATEGORIES + " (category_name) VALUES (?);";
-            SQLiteStatement stmtCat = db.compileStatement(sqlCat);
-            String[] categories = {"Servis AC", "Instalasi Listrik", "Perbaikan Pipa"};
-            for (String category : categories) { stmtCat.clearBindings(); stmtCat.bindString(1, category); stmtCat.executeInsert(); }
-            stmtCat.close();
+            // ================= TECHNICIANS =================
+            String sqlTech = "INSERT INTO technicians (user_id, name, phone_number, earnings) VALUES (?, ?, ?, ?)";
+            SQLiteStatement techStmt = db.compileStatement(sqlTech);
 
-            // ========== SERVICES ========== 
-            String sqlService = "INSERT INTO " + TABLE_SERVICES + " (service_name, description, price, technician_id, category_id) VALUES (?, ?, ?, ?, ?);";
-            SQLiteStatement stmtService = db.compileStatement(sqlService);
-            Object[][] servicesData = {{"Cuci AC 1/2 PK", "Pembersihan unit indoor & outdoor.", 75000.0, 1, 1}, {"Bongkar Pasang AC", "Jasa pemindahan unit AC.", 250000.0, 2, 1}, {"Perbaikan Stop Kontak", "Memperbaiki stop kontak rusak.", 50000.0, 3, 2}};
-            for (Object[] service : servicesData) { stmtService.clearBindings(); stmtService.bindString(1, (String) service[0]); stmtService.bindString(2, (String) service[1]); stmtService.bindDouble(3, (Double) service[2]); stmtService.bindLong(4, (Integer) service[3]); stmtService.bindLong(5, (Integer) service[4]); stmtService.executeInsert(); }
-            stmtService.close();
-            
-            // ========== ORDERS (Corrected Logic) ========== 
-            String sqlOrder = "INSERT INTO " + TABLE_ORDERS + " (user_id, service_id, address, order_date, status) VALUES (?, ?, ?, ?, ?);";
-            SQLiteStatement stmtOrder = db.compileStatement(sqlOrder);
-            // user1 (ID 22) orders service 1 (from tech 1)
-            stmtOrder.bindLong(1, 22); stmtOrder.bindLong(2, 1); stmtOrder.bindString(3, "Jl. Merdeka No. 1, Jakarta"); stmtOrder.bindString(4, "2024-05-10"); stmtOrder.bindString(5, "Selesai"); stmtOrder.executeInsert();
-            // user2 (ID 23) orders service 3 (from tech 3)
-            stmtOrder.bindLong(1, 23); stmtOrder.bindLong(2, 3); stmtOrder.bindString(3, "Jl. Sudirman No. 12, Jakarta"); stmtOrder.bindString(4, "2024-05-11"); stmtOrder.bindString(5, "Selesai"); stmtOrder.executeInsert();
-            // user1 (ID 22) also orders service 2 (from tech 2)
-            stmtOrder.bindLong(1, 22); stmtOrder.bindLong(2, 2); stmtOrder.bindString(3, "Jl. Thamrin No. 15, Jakarta"); stmtOrder.bindString(4, "2024-05-12"); stmtOrder.bindString(5, "Menunggu"); stmtOrder.executeInsert();
-            stmtOrder.close();
+            for (int i = 1; i <= 20; i++) {
+                techStmt.clearBindings();
+                techStmt.bindLong(1, i + 1); // admin = 1
+                techStmt.bindString(2, "Technician " + i);
+                techStmt.bindString(3, "08123" + (100000 + i));
+                techStmt.bindDouble(4, 0);
+                techStmt.executeInsert();
+            }
+            techStmt.close();
 
-            // ========== REVIEWS (Corrected Logic) ========== 
-            String sqlReview = "INSERT INTO " + TABLE_REVIEWS + " (service_id, user_id, rating, comment) VALUES (?, ?, ?, ?);";
-            SQLiteStatement stmtReview = db.compileStatement(sqlReview);
-            // Review for service 1 from user 22
-            stmtReview.bindLong(1, 1); stmtReview.bindLong(2, 22); stmtReview.bindLong(3, 5); stmtReview.bindString(4, "Sangat bersih dan profesional!"); stmtReview.executeInsert();
-            // Review for service 3 from user 23
-            stmtReview.bindLong(1, 3); stmtReview.bindLong(2, 23); stmtReview.bindLong(3, 4); stmtReview.bindString(4, "Lumayan bagus, teknisi datang tepat waktu."); stmtReview.executeInsert();
-            stmtReview.close();
+            // ================= CATEGORIES =================
+            String[] categories = {
+                    "Servis AC", "Instalasi Listrik", "Perbaikan Pipa",
+                    "Service Mesin Cuci", "Service Kulkas"
+            };
+
+            SQLiteStatement catStmt = db.compileStatement(
+                    "INSERT INTO service_categories (category_name) VALUES (?)"
+            );
+
+            for (String cat : categories) {
+                catStmt.clearBindings();
+                catStmt.bindString(1, cat);
+                catStmt.executeInsert();
+            }
+            catStmt.close();
+
+            // ================= SERVICES (25 DATA) =================
+            SQLiteStatement serviceStmt = db.compileStatement(
+                    "INSERT INTO services (service_name, description, price, technician_id, category_id) VALUES (?, ?, ?, ?, ?)"
+            );
+
+            for (int i = 1; i <= 25; i++) {
+                serviceStmt.clearBindings();
+                serviceStmt.bindString(1, "Service #" + i);
+                serviceStmt.bindString(2, "Deskripsi layanan " + i);
+                serviceStmt.bindDouble(3, 50000 + (i * 10000));
+                serviceStmt.bindLong(4, (i % 20) + 1);   // technician
+                serviceStmt.bindLong(5, (i % 5) + 1);    // category
+                serviceStmt.executeInsert();
+            }
+            serviceStmt.close();
+
+            // ================= ORDERS (30 DATA) =================
+            SQLiteStatement orderStmt = db.compileStatement(
+                    "INSERT INTO orders (user_id, service_id, address, order_date, status) VALUES (?, ?, ?, ?, ?)"
+            );
+
+            for (int i = 1; i <= 30; i++) {
+                orderStmt.clearBindings();
+                orderStmt.bindLong(1, 22 + (i % 30)); // user
+                orderStmt.bindLong(2, (i % 25) + 1);  // service
+                orderStmt.bindString(3, "Alamat pelanggan ke-" + i);
+                orderStmt.bindString(4, "2024-05-" + ((i % 28) + 1));
+                orderStmt.bindString(5, i % 2 == 0 ? "Selesai" : "Menunggu");
+                orderStmt.executeInsert();
+            }
+            orderStmt.close();
+
+            // ================= PAYMENTS =================
+            SQLiteStatement payStmt = db.compileStatement(
+                    "INSERT INTO payments (order_id, method, amount) VALUES (?, ?, ?)"
+            );
+
+            for (int i = 1; i <= 20; i++) {
+                payStmt.clearBindings();
+                payStmt.bindLong(1, i);
+                payStmt.bindString(2, "Cash");
+                payStmt.bindDouble(3, 100000 + (i * 5000));
+                payStmt.executeInsert();
+            }
+            payStmt.close();
+
+            // ================= REVIEWS =================
+            SQLiteStatement reviewStmt = db.compileStatement(
+                    "INSERT INTO reviews (service_id, user_id, rating, comment) VALUES (?, ?, ?, ?)"
+            );
+
+            for (int i = 1; i <= 20; i++) {
+                reviewStmt.clearBindings();
+                reviewStmt.bindLong(1, (i % 25) + 1);
+                reviewStmt.bindLong(2, 22 + i);
+                reviewStmt.bindLong(3, (i % 5) + 1);
+                reviewStmt.bindString(4, "Review pelanggan ke-" + i);
+                reviewStmt.executeInsert();
+            }
+            reviewStmt.close();
 
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
     }
+
 }
