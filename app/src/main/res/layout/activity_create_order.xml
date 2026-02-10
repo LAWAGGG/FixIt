@@ -7,22 +7,34 @@
     android:background="@drawable/gradient_background"
     tools:context=".activities.CreateOrderActivity">
 
+    <!-- Background Image -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:alpha="0.3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationIconTint="@color/white"
         app:title="Confirm Order"
-        app:titleTextColor="@color/white" />
+        app:titleTextColor="@color/white"
+        app:titleCentered="true"/>
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,94 +49,135 @@
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.FixIt.CardView.Glass"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1AFFFFFF"
+                app:strokeColor="#40FFFFFF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/glass_card_background"
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_large">
 
-                    <TextView
-                        android:id="@+id/textViewServiceName"
-                        style="@style/TextAppearance.FixIt.Title"
-                        android:layout_width="wrap_content"
+                    <!-- Service Details Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        tools:text="Full Home Deep Cleaning" />
+                        android:orientation="vertical"
+                        android:paddingBottom="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/input_field_background">
+
+                        <TextView
+                            android:id="@+id/textViewServiceName"
+                            style="@style/TextAppearance.FixIt.Title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            android:gravity="center"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tools:text="Full Home Deep Cleaning" />
+
+                        <TextView
+                            android:id="@+id/textViewServicePrice"
+                            style="@style/TextAppearance.FixIt.Subtitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textColor="@color/secondary"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            tools:text="Rp 599.000" />
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/textViewServicePrice"
-                        style="@style/TextAppearance.FixIt.Subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:textColor="@color/secondary"
-                        tools:text="Rp 599.000" />
+                        android:text="Service Address"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <EditText
+                        android:id="@+id/editTextAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/input_field_background"
+                        android:hint="Enter full address"
+                        android:inputType="textPostalAddress"
+                        android:paddingHorizontal="16dp"
+                        android:textColor="@color/white"
+                        android:textColorHint="#80FFFFFF"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date &amp; Time"
+                        android:textColor="@color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <EditText
+                        android:id="@+id/editTextOrderDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/input_field_background"
+                        android:hint="Select date and time"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:inputType="none"
+                        android:paddingHorizontal="16dp"
+                        android:drawableEnd="@drawable/ic_date"
+                        android:drawableTint="@color/white"
+                        android:textColor="@color/white"
+                        android:textColorHint="#80FFFFFF"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Payment Method"
+                        android:textColor="@color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:id="@+id/textViewSelectedPayment"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/input_field_background"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:text="Tap to select payment"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:drawableEndCompat="@drawable/ic_arrow_right"
+                        app:drawableTint="@color/white" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xlarge"
-                android:hint="Service Address"
-                app:boxStrokeColor="@color/primary"
-                app:hintTextColor="@color/text_secondary_dark">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextAddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPostalAddress"
-                    android:textColor="@color/text_primary_dark" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:hint="Select Date &amp; Time"
-        app:boxStrokeColor="@color/primary"
-        app:hintTextColor="@color/text_secondary_dark">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextOrderDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusable="false"
-            android:clickable="true"
-            android:inputType="none"
-            android:textColor="@color/text_primary_dark" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/textViewSelectedPayment"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:background="@drawable/glass_card_background"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="16dp"
-        android:text="Choose Payment Method"
-        android:textColor="@color/text_secondary_dark" />
 
         </LinearLayout>
     </ScrollView>
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/buttonPlaceOrder"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_large"
-        android:padding="@dimen/spacing_medium"
-        android:text="Place Order"
-        android:textAppearance="@style/TextAppearance.FixIt.Title"
-        app:cornerRadius="@dimen/corner_radius_medium"
+        android:layout_height="60dp"
+        android:layout_margin="24dp"
+        android:text="Confirm Order"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

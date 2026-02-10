@@ -1,12 +1,15 @@
 package com.example.fixit_v2.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.fixit_v2.R;
 import com.example.fixit_v2.adapters.ReviewAdapter;
 import com.example.fixit_v2.databinding.ActivityServiceDetailBinding;
 import com.example.fixit_v2.datasource.ReviewDataSource;
@@ -16,6 +19,7 @@ import com.example.fixit_v2.models.Review;
 import com.example.fixit_v2.models.Service;
 import com.example.fixit_v2.models.Technician;
 
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
@@ -80,18 +84,70 @@ public class ServiceDetailActivity extends AppCompatActivity {
             return;
         }
 
-        binding.toolbarLayout.setTitle(service.getServiceName());
         binding.textViewServiceName.setText(service.getServiceName());
         binding.textViewServiceDescription.setText(service.getDescription());
         binding.textViewServicePrice.setText(String.format(Locale.GERMAN, "Rp %,d", (long) service.getPrice()));
+
+        // Set Toolbar title (standard navbar style)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(service.getServiceName());
+        }
 
         Technician technician = technicianDataSource.getTechnicianById(service.getTechnicianId());
         if (technician != null) {
             binding.textViewTechnicianName.setText("by " + technician.getName());
         }
 
-        // Load images with Picasso/Glide here
-        // Picasso.get().load(service.getImageUrl()).into(binding.imageViewServiceImage);
+        // Load service image from imagePath
+        String imagePath = service.getImagePath();
+        boolean imageLoaded = false;
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                Bitmap bitmap = null;
+                
+                // Check if image is from assets or internal storage
+                if (imagePath.startsWith("images/")) {
+                    // Load from assets
+                    java.io.InputStream inputStream = getAssets().open(imagePath);
+                    bitmap = BitmapFactory.decodeStream(inputStream);
+                    inputStream.close();
+                } else {
+                    // Load from internal storage (relative path)
+                    File imageFile = new File(getFilesDir(), imagePath);
+                    if (imageFile.exists()) {
+                        bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                    }
+                }
+                
+                if (bitmap != null) {
+                    binding.imageViewServiceImage.setImageBitmap(bitmap);
+                    binding.imageViewServiceImage.setVisibility(android.view.View.VISIBLE);
+                    imageLoaded = true;
+                }
+            } catch (java.io.IOException e) {
+                // If image error, will treat as not loaded
+            }
+        }
+
+        if (!imageLoaded) {
+            // No image: Hide the ImageView and collapse the AppBar to show only navbar
+            binding.imageViewServiceImage.setVisibility(android.view.View.GONE);
+            binding.appBar.setExpanded(false, false);
+            // Disable scroll flags if no image exists so it stays as a static navbar
+            com.google.android.material.appbar.AppBarLayout.LayoutParams params = 
+                (com.google.android.material.appbar.AppBarLayout.LayoutParams) binding.toolbarLayout.getLayoutParams();
+            params.setScrollFlags(0); // Standard static toolbar behavior
+            binding.toolbarLayout.setLayoutParams(params);
+        } else {
+            binding.imageViewServiceImage.setVisibility(android.view.View.VISIBLE);
+            binding.appBar.setExpanded(true, true);
+            // Re-enable scroll flags if image exists
+            com.google.android.material.appbar.AppBarLayout.LayoutParams params = 
+                (com.google.android.material.appbar.AppBarLayout.LayoutParams) binding.toolbarLayout.getLayoutParams();
+            params.setScrollFlags(com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | 
+                                 com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+            binding.toolbarLayout.setLayoutParams(params);
+        }
 
         List<Review> reviews = reviewDataSource.getReviewsByServiceId(serviceId);
         reviewAdapter = new ReviewAdapter(this, reviews);

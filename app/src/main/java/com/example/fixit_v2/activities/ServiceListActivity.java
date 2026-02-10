@@ -65,7 +65,7 @@ public class ServiceListActivity extends AppCompatActivity {
             Toast.makeText(this, "No services found in this category.", Toast.LENGTH_SHORT).show();
         }
 
-        BestServiceAdapter adapter = new BestServiceAdapter(this, serviceList, technicianDataSource, reviewDataSource);
+        BestServiceAdapter adapter = new BestServiceAdapter(this, serviceList, technicianDataSource, reviewDataSource, categoryDataSource);
         binding.recyclerViewServices.setAdapter(adapter);
     }
 

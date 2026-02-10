@@ -55,8 +55,8 @@ public class BookingsFragment extends Fragment {
                 Toast.makeText(getContext(), "You have no bookings yet.", Toast.LENGTH_SHORT).show();
             }
             
-            // Corrected constructor call with userId
-            BookingListAdapter adapter = new BookingListAdapter(getContext(), orders, technicianDataSource, serviceDataSource, userId);
+            // Corrected constructor call with orderDataSource and userId
+            BookingListAdapter adapter = new BookingListAdapter(getContext(), orders, technicianDataSource, serviceDataSource, orderDataSource, userId);
             binding.recyclerViewBookings.setAdapter(adapter);
 
         } else {

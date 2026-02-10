@@ -22,7 +22,8 @@ public class ServiceDataSource {
         DatabaseHelper.KEY_DESCRIPTION, 
         DatabaseHelper.KEY_PRICE, 
         DatabaseHelper.KEY_TECHNICIAN_ID, 
-        DatabaseHelper.KEY_CATEGORY_ID 
+        DatabaseHelper.KEY_CATEGORY_ID,
+        DatabaseHelper.KEY_IMAGE_PATH
     };
 
     public ServiceDataSource(Context context) {
@@ -37,13 +38,14 @@ public class ServiceDataSource {
         dbHelper.close();
     }
 
-    public Service createService(String serviceName, String description, double price, int technicianId, int categoryId) {
+    public Service createService(String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_SERVICE_NAME, serviceName);
         values.put(DatabaseHelper.KEY_DESCRIPTION, description);
         values.put(DatabaseHelper.KEY_PRICE, price);
         values.put(DatabaseHelper.KEY_TECHNICIAN_ID, technicianId);
         values.put(DatabaseHelper.KEY_CATEGORY_ID, categoryId);
+        values.put(DatabaseHelper.KEY_IMAGE_PATH, imagePath);
         long insertId = database.insert(DatabaseHelper.TABLE_SERVICES, null, values);
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, DatabaseHelper.KEY_ID + " = " + insertId, null, null, null, null);
         cursor.moveToFirst();
@@ -128,6 +130,14 @@ public class ServiceDataSource {
     }
 
     private Service cursorToService(Cursor cursor) {
-        return new Service(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3), cursor.getInt(4), cursor.getInt(5));
+        return new Service(
+            cursor.getInt(0),      // id
+            cursor.getString(1),   // service_name
+            cursor.getString(2),   // description
+            cursor.getDouble(3),   // price
+            cursor.getInt(4),      // technician_id
+            cursor.getInt(5),      // category_id
+            cursor.getString(6)    // image_path
+        );
     }
 }

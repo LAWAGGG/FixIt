@@ -2,48 +2,50 @@ package com.example.fixit_v2.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fixit_v2.R;
+import com.example.fixit_v2.adapters.TechnicianAdapter;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
 import com.example.fixit_v2.datasource.UserDataSource;
 import com.example.fixit_v2.models.Technician;
 import com.example.fixit_v2.models.User;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
 public class AdminTechniciansFragment extends Fragment {
 
-    private ListView listViewTechnicians;
-    private Button buttonAddTechnician;
+    private RecyclerView recyclerViewTechnicians;
+    private FloatingActionButton fabAddTechnician;
     private TechnicianDataSource technicianDataSource;
     private UserDataSource userDataSource;
-    private ArrayAdapter<Technician> adapter;
+    private TechnicianAdapter adapter;
     private List<Technician> technicians;
+
+    private android.widget.EditText editTextSearch;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_technicians, container, false);
 
-        listViewTechnicians = view.findViewById(R.id.listViewTechnicians);
-        buttonAddTechnician = view.findViewById(R.id.buttonAddTechnician);
+        recyclerViewTechnicians = view.findViewById(R.id.recyclerViewTechnicians);
+        fabAddTechnician = view.findViewById(R.id.fabAddTechnician);
+        editTextSearch = view.findViewById(R.id.editTextSearch);
+
+        recyclerViewTechnicians.setLayoutManager(new LinearLayoutManager(getContext()));
 
         technicianDataSource = new TechnicianDataSource(getContext());
         userDataSource = new UserDataSource(getContext());
@@ -52,22 +54,52 @@ public class AdminTechniciansFragment extends Fragment {
 
         technicians = technicianDataSource.getAllTechnicians();
 
-        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, technicians);
-        listViewTechnicians.setAdapter(adapter);
-        registerForContextMenu(listViewTechnicians);
-
-        buttonAddTechnician.setOnClickListener(new View.OnClickListener() {
+        adapter = new TechnicianAdapter(getContext(), technicians, new TechnicianAdapter.OnItemClickListener() {
             @Override
-            public void onClick(View v) {
-                showAddEditTechnicianDialog(null);
+            public void onEditClick(Technician technician) {
+                showAddEditTechnicianDialog(technician);
             }
+
+            @Override
+            public void onDeleteClick(Technician technician) {
+                showDeleteConfirmationDialog(technician);
+            }
+        });
+        recyclerViewTechnicians.setAdapter(adapter);
+
+        fabAddTechnician.setOnClickListener(v -> showAddEditTechnicianDialog(null));
+
+        editTextSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapter.filter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
         });
 
         return view;
     }
 
+    private void showDeleteConfirmationDialog(Technician technician) {
+        new AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme)
+                .setTitle("Delete Technician")
+                .setMessage("Are you sure you want to delete " + technician.getName() + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    technicianDataSource.deleteTechnician(technician);
+                    refreshTechnicianList();
+                    Toast.makeText(getContext(), "Technician deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     private void showAddEditTechnicianDialog(final Technician technician) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_add_technician, null);
         builder.setView(dialogView);
@@ -77,8 +109,12 @@ public class AdminTechniciansFragment extends Fragment {
         final EditText editTextUsername = dialogView.findViewById(R.id.editTextUsername);
         final EditText editTextEmail = dialogView.findViewById(R.id.editTextEmail);
         final EditText editTextPassword = dialogView.findViewById(R.id.editTextPassword);
+        android.widget.TextView textViewTitle = dialogView.findViewById(R.id.textViewDialogTitle);
+        android.widget.Button buttonSave = dialogView.findViewById(R.id.buttonSave);
+        android.widget.Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
 
-        builder.setTitle(technician == null ? "Add Technician" : "Edit Technician");
+        textViewTitle.setText(technician == null ? "Add Technician" : "Edit Technician");
+        buttonSave.setText(technician == null ? "Add" : "Save");
 
         if (technician != null) {
             editTextName.setText(technician.getName());
@@ -92,69 +128,57 @@ public class AdminTechniciansFragment extends Fragment {
             editTextPassword.setVisibility(View.VISIBLE);
         }
 
-        builder.setPositiveButton(technician == null ? "Add" : "Save", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String name = editTextName.getText().toString();
-                String phone = editTextPhone.getText().toString();
+        AlertDialog dialog = builder.create();
+        buttonSave.setOnClickListener(v -> {
+            String name = editTextName.getText().toString();
+            String phone = editTextPhone.getText().toString();
 
-                if (technician == null) {
-                    String username = editTextUsername.getText().toString();
-                    String email = editTextEmail.getText().toString();
-                    String password = editTextPassword.getText().toString();
+            if (technician == null) {
+                String username = editTextUsername.getText().toString();
+                String email = editTextEmail.getText().toString();
+                String password = editTextPassword.getText().toString();
 
-                    if (name.isEmpty() || phone.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()){
-                        Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    User newUser = userDataSource.createUser(username, password, email, phone, "Technician");
-                    if (newUser != null) {
-                        technicianDataSource.createTechnician(newUser.getId(), name, phone);
-                    } else {
-                        Toast.makeText(getContext(), "Failed to create user. Username might already exist.", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    technician.setName(name);
-                    technician.setPhoneNumber(phone);
-                    technicianDataSource.updateTechnician(technician);
+                if (name.isEmpty() || phone.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()){
+                    Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                refreshTechnicianList();
+
+                User newUser = userDataSource.createUser(username, password, email, phone, "Technician");
+                if (newUser != null) {
+                    technicianDataSource.createTechnician(newUser.getId(), name, phone);
+                    Toast.makeText(getContext(), "Technician added successfully", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                } else {
+                    Toast.makeText(getContext(), "Failed to create user. Username might already exist.", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                if (name.isEmpty() || phone.isEmpty()) {
+                    Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                technician.setName(name);
+                technician.setPhoneNumber(phone);
+                technicianDataSource.updateTechnician(technician);
+                Toast.makeText(getContext(), "Technician updated", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
             }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
-        inflater.inflate(R.menu.technician_context_menu, menu);
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        Technician selectedTechnician = technicians.get(info.position);
-
-        int itemId = item.getItemId();
-        if (itemId == R.id.edit_technician) {
-            showAddEditTechnicianDialog(selectedTechnician);
-            return true;
-        } else if (itemId == R.id.delete_technician) {
-            technicianDataSource.deleteTechnician(selectedTechnician);
             refreshTechnicianList();
-            return true;
+        });
+
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            android.view.WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.gravity = android.view.Gravity.CENTER;
+            params.width = android.view.WindowManager.LayoutParams.MATCH_PARENT;
+            params.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT;
+            params.dimAmount = 0.8f;
+            dialog.getWindow().setAttributes(params);
+            dialog.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         }
-        return super.onContextItemSelected(item);
     }
 
     private void refreshTechnicianList() {

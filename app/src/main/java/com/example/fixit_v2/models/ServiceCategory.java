@@ -5,10 +5,12 @@ import androidx.annotation.NonNull;
 public class ServiceCategory {
     private int id;
     private String categoryName;
+    private String imagePath;
 
-    public ServiceCategory(int id, String categoryName) {
+    public ServiceCategory(int id, String categoryName, String imagePath) {
         this.id = id;
         this.categoryName = categoryName;
+        this.imagePath = imagePath;
     }
 
     public int getId() {
@@ -25,6 +27,14 @@ public class ServiceCategory {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     @NonNull

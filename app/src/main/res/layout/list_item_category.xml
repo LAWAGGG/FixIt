@@ -5,7 +5,10 @@
     style="@style/Widget.FixIt.CardView.Glass"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_medium">
+    android:layout_marginBottom="@dimen/spacing_medium"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -15,9 +18,10 @@
 
         <ImageView
             android:id="@+id/imageViewCategoryIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_nav_categories"
+            app:tint="@color/primary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -42,6 +46,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_large"
+            android:layout_marginTop="4dp"
             android:text="0 Services"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

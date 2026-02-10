@@ -66,8 +66,34 @@ public class HomeCategoryAdapter extends RecyclerView.Adapter<HomeCategoryAdapte
                     }
                 });
             } else {
-                int iconResId = getIconForCategory(category.getCategoryName());
-                binding.imageViewCategoryIcon.setImageDrawable(ContextCompat.getDrawable(context, iconResId));
+                String imagePath = category.getImagePath();
+                if (imagePath != null && !imagePath.isEmpty()) {
+                    try {
+                        android.graphics.Bitmap bitmap = null;
+                        if (imagePath.startsWith("images/")) {
+                            java.io.InputStream is = context.getAssets().open(imagePath);
+                            bitmap = android.graphics.BitmapFactory.decodeStream(is);
+                            is.close();
+                        } else {
+                            java.io.File file = new java.io.File(context.getFilesDir(), imagePath);
+                            if (file.exists()) {
+                                bitmap = android.graphics.BitmapFactory.decodeFile(file.getAbsolutePath());
+                            }
+                        }
+
+                        if (bitmap != null) {
+                            binding.imageViewCategoryIcon.setImageBitmap(bitmap);
+                        } else {
+                            binding.imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                        }
+                    } catch (java.io.IOException e) {
+                        e.printStackTrace();
+                        binding.imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                    }
+                } else {
+                    binding.imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                }
+
                 itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(context, ServiceListActivity.class);
                     intent.putExtra("CATEGORY_ID", category.getId());
@@ -75,16 +101,6 @@ public class HomeCategoryAdapter extends RecyclerView.Adapter<HomeCategoryAdapte
                     context.startActivity(intent);
                 });
             }
-        }
-
-        private int getIconForCategory(String categoryName) {
-            String lowerCaseName = categoryName.toLowerCase();
-            if (lowerCaseName.contains("cleaning")) return R.drawable.ic_cleaning;
-            if (lowerCaseName.contains("plumbing")) return R.drawable.ic_plumbing;
-            if (lowerCaseName.contains("electric")) return R.drawable.ic_electric;
-            if (lowerCaseName.contains("paint")) return R.drawable.ic_painting;
-            if (lowerCaseName.contains("ac")) return R.drawable.ic_ac_repair;
-            return R.drawable.ic_misc_category; // Default icon
         }
     }
 }

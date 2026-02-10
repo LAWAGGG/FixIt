@@ -1,15 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FixIt.CardView.Glass"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    app:cardBackgroundColor="@color/bottom_nav_background"
+    app:strokeColor="#40FFFFFF"
+    app:strokeWidth="1dp">
 
-    <EditText
-        android:id="@+id/editTextCategoryName"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Category Name"
-        android:inputType="text" />
+        android:orientation="vertical"
+        android:padding="24dp">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/textViewDialogTitle"
+            style="@style/TextAppearance.FixIt.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Category"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/editTextCategoryName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/input_field_background"
+            android:hint="Category Name"
+            android:inputType="textCapWords"
+            android:paddingHorizontal="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="#80FFFFFF" />
+
+        <ImageView
+            android:id="@+id/imageViewCategoryPreview"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_nav_categories"
+            android:visibility="visible"
+            app:tint="@color/primary" />
+
+        <Button
+            android:id="@+id/buttonSelectCategoryImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#30FFFFFF"
+            android:text="Select Image"
+            android:textColor="@color/white" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/buttonCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textColor="@color/white"
+                android:backgroundTint="#30FFFFFF"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/buttonSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

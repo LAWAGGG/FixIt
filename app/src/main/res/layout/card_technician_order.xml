@@ -70,6 +70,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_medium"
             android:textStyle="bold"
+            android:padding="8dp"
+            android:background="@drawable/input_field_background"
+            android:drawablePadding="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewOrderDate"
             tools:text="Status: Pending" />

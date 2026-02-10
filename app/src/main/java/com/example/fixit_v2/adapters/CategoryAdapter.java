@@ -1,45 +1,71 @@
 package com.example.fixit_v2.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fixit_v2.R;
-import com.example.fixit_v2.activities.ServiceListActivity;
-import com.example.fixit_v2.databinding.ListItemCategoryBinding;
 import com.example.fixit_v2.models.ServiceCategory;
 
 import java.util.List;
 
-public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
+public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
 
-    private final Context context;
-    private final List<ServiceCategory> categoryList;
-    private final int userId;
+    private Context context;
+    private List<ServiceCategory> categoryList;
+    private List<ServiceCategory> categoryListFull; // Copy for filtering
+    private OnItemClickListener listener;
 
-    public CategoryAdapter(Context context, List<ServiceCategory> categoryList, int userId) {
+    public interface OnItemClickListener {
+        void onEditClick(ServiceCategory category);
+        void onDeleteClick(ServiceCategory category);
+    }
+
+    public CategoryAdapter(Context context, List<ServiceCategory> categoryList, OnItemClickListener listener) {
         this.context = context;
         this.categoryList = categoryList;
-        this.userId = userId;
+        this.categoryListFull = new java.util.ArrayList<>(categoryList); // Initialize copy
+        this.listener = listener;
+    }
+
+    public void updateList(List<ServiceCategory> newList) {
+        categoryList = newList;
+        categoryListFull = new java.util.ArrayList<>(newList); // Update copy
+        notifyDataSetChanged();
+    }
+
+    public void filter(String text) {
+        categoryList.clear();
+        if (text.isEmpty()) {
+            categoryList.addAll(categoryListFull);
+        } else {
+            text = text.toLowerCase();
+            for (ServiceCategory item : categoryListFull) {
+                if (item.getCategoryName().toLowerCase().contains(text)) {
+                    categoryList.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        ListItemCategoryBinding binding = ListItemCategoryBinding.inflate(inflater, parent, false);
-        return new CategoryViewHolder(binding);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_category_card, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ServiceCategory category = categoryList.get(position);
-        holder.bind(category);
+        holder.bind(category, listener);
     }
 
     @Override
@@ -47,50 +73,79 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return categoryList.size();
     }
 
-    class CategoryViewHolder extends RecyclerView.ViewHolder {
-        private final ListItemCategoryBinding binding;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textViewName;
+        ImageView imageViewMore;
+        ImageView imageViewCategoryIcon;
 
-        public CategoryViewHolder(ListItemCategoryBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    ServiceCategory selectedCategory = categoryList.get(position);
-                    Intent intent = new Intent(context, ServiceListActivity.class);
-                    intent.putExtra("CATEGORY_ID", selectedCategory.getId());
-                    intent.putExtra("USER_ID", userId);
-                    context.startActivity(intent);
-                }
-            });
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            textViewName = itemView.findViewById(R.id.textViewCategoryName);
+            imageViewMore = itemView.findViewById(R.id.imageViewMore);
+            imageViewCategoryIcon = itemView.findViewById(R.id.imageViewCategoryIcon);
         }
 
-        void bind(ServiceCategory category) {
-            binding.textViewCategoryName.setText(category.getCategoryName());
+        public void bind(final ServiceCategory category, final OnItemClickListener listener) {
+            textViewName.setText(category.getCategoryName());
 
-            int iconResId;
-            String categoryName = category.getCategoryName().toLowerCase();
-            
-            // Simple logic to assign icons based on category name
-            if (categoryName.contains("cleaning")) {
-                iconResId = R.drawable.ic_cleaning; // Assuming you have these drawables
-            } else if (categoryName.contains("plumbing")) {
-                iconResId = R.drawable.ic_plumbing;
-            } else if (categoryName.contains("electric")) {
-                iconResId = R.drawable.ic_electric;
-            } else if (categoryName.contains("paint")) {
-                iconResId = R.drawable.ic_painting;
-            } else if (categoryName.contains("ac")) {
-                iconResId = R.drawable.ic_ac_repair;
+            // Load category icon from assets or internal storage
+            String imagePath = category.getImagePath();
+            if (imagePath != null && !imagePath.isEmpty()) {
+                try {
+                    android.graphics.Bitmap bitmap = null;
+                    if (imagePath.startsWith("images/")) {
+                        // Load from assets
+                        java.io.InputStream is = itemView.getContext().getAssets().open(imagePath);
+                        bitmap = android.graphics.BitmapFactory.decodeStream(is);
+                        is.close();
+                        imageViewCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(itemView.getContext().getColor(R.color.primary)));
+                    } else {
+                        // Load from internal storage
+                        java.io.File file = new java.io.File(itemView.getContext().getFilesDir(), imagePath);
+                        if (file.exists()) {
+                            bitmap = android.graphics.BitmapFactory.decodeFile(file.getAbsolutePath());
+                            imageViewCategoryIcon.setImageTintList(null); // No tint for real photos
+                        }
+                    }
+                    
+                    if (bitmap != null) {
+                        imageViewCategoryIcon.setImageBitmap(bitmap);
+                    } else {
+                        imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                        imageViewCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(itemView.getContext().getColor(R.color.primary)));
+                    }
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                    imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                    imageViewCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(itemView.getContext().getColor(R.color.primary)));
+                }
             } else {
-                iconResId = R.drawable.ic_misc_category; // A default icon
+                imageViewCategoryIcon.setImageResource(R.drawable.ic_misc_category);
+                imageViewCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(itemView.getContext().getColor(R.color.primary)));
             }
+
+            imageViewMore.setOnClickListener(v -> {
+                showPopupMenu(v, category, listener);
+            });
             
-            binding.imageViewCategoryIcon.setImageDrawable(ContextCompat.getDrawable(context, iconResId));
-            
-            // Example for service count - you can add a method to your model for this
-            binding.textViewServiceCount.setText("10+ Services");
+            itemView.setOnClickListener(v -> listener.onEditClick(category));
+        }
+
+        private void showPopupMenu(View view, ServiceCategory category, OnItemClickListener listener) {
+            android.widget.PopupMenu popup = new android.widget.PopupMenu(view.getContext(), view);
+            popup.inflate(R.menu.service_category_context_menu);
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.edit_category) {
+                    listener.onEditClick(category);
+                    return true;
+                } else if (id == R.id.delete_category) {
+                    listener.onDeleteClick(category);
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
         }
     }
 }

@@ -19,6 +19,8 @@
         android:background="@color/bottom_nav_background"
         app:itemIconTint="@color/bottom_nav_color_selector"
         app:itemTextColor="@color/bottom_nav_color_selector"
+        app:itemRippleColor="@color/primary"
+        android:paddingTop="4dp"
         app:menu="@menu/technician_bottom_nav_menu" />
 
 </RelativeLayout>

@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteStatement;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "FixIt.db";
-    private static final int DATABASE_VERSION = 20; // Final Seeder Version
+    private static final int DATABASE_VERSION = 22; // Added image_path to categories
 
     public static final String TABLE_USERS = "users";
     public static final String TABLE_TECHNICIANS = "technicians";
@@ -42,11 +42,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_AMOUNT = "amount";
     public static final String KEY_RATING = "rating";
     public static final String KEY_COMMENT = "comment";
+    public static final String KEY_IMAGE_PATH = "image_path";
 
     private static final String CREATE_TABLE_USERS = "CREATE TABLE " + TABLE_USERS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USERNAME + " TEXT UNIQUE NOT NULL, " + KEY_PASSWORD + " TEXT NOT NULL, " + KEY_EMAIL + " TEXT NOT NULL, " + KEY_PHONE + " TEXT, " + KEY_ROLE + " TEXT NOT NULL);";
     private static final String CREATE_TABLE_TECHNICIANS = "CREATE TABLE " + TABLE_TECHNICIANS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USER_ID + " INTEGER, " + KEY_NAME + " TEXT NOT NULL, " + KEY_PHONE_NUMBER + " TEXT, " + KEY_EARNINGS + " REAL DEFAULT 0, FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "));";
-    private static final String CREATE_TABLE_SERVICE_CATEGORIES = "CREATE TABLE " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_CATEGORY_NAME + " TEXT NOT NULL);";
-    private static final String CREATE_TABLE_SERVICES = "CREATE TABLE " + TABLE_SERVICES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_NAME + " TEXT NOT NULL, " + KEY_DESCRIPTION + " TEXT, " + KEY_PRICE + " REAL NOT NULL, " + KEY_TECHNICIAN_ID + " INTEGER, " + KEY_CATEGORY_ID + " INTEGER, FOREIGN KEY(" + KEY_TECHNICIAN_ID + ") REFERENCES " + TABLE_TECHNICIANS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_CATEGORY_ID + ") REFERENCES " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + "));";
+    private static final String CREATE_TABLE_SERVICE_CATEGORIES = "CREATE TABLE " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_CATEGORY_NAME + " TEXT NOT NULL, " + KEY_IMAGE_PATH + " TEXT);";
+    private static final String CREATE_TABLE_SERVICES = "CREATE TABLE " + TABLE_SERVICES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_NAME + " TEXT NOT NULL, " + KEY_DESCRIPTION + " TEXT, " + KEY_PRICE + " REAL NOT NULL, " + KEY_TECHNICIAN_ID + " INTEGER, " + KEY_CATEGORY_ID + " INTEGER, " + KEY_IMAGE_PATH + " TEXT, FOREIGN KEY(" + KEY_TECHNICIAN_ID + ") REFERENCES " + TABLE_TECHNICIANS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_CATEGORY_ID + ") REFERENCES " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_ORDERS = "CREATE TABLE " + TABLE_ORDERS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USER_ID + " INTEGER, " + KEY_SERVICE_ID + " INTEGER, " + KEY_ADDRESS + " TEXT NOT NULL, " + KEY_ORDER_DATE + " TEXT NOT NULL, " + KEY_STATUS + " TEXT NOT NULL, FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_PAYMENTS = "CREATE TABLE " + TABLE_PAYMENTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_METHOD + " TEXT NOT NULL, " + KEY_AMOUNT + " REAL NOT NULL, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_REVIEWS = "CREATE TABLE " + TABLE_REVIEWS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_ID + " INTEGER, " + KEY_USER_ID + " INTEGER, " + KEY_RATING + " INTEGER, " + KEY_COMMENT + " TEXT, FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "));";
@@ -133,32 +134,64 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // ================= CATEGORIES =================
             String[] categories = {
                     "Servis AC", "Instalasi Listrik", "Perbaikan Pipa",
-                    "Service Mesin Cuci", "Service Kulkas"
+                    "Pengecatan", "Tukang Kayu", "Kebersihan", "Layanan Lainnya"
+            };
+            String[] categoryIcons = {
+                    "images/categories/category_ac_repair.png",
+                    "images/categories/category_electrician.png",
+                    "images/categories/category_plumber.png",
+                    "images/categories/category_painter.png",
+                    "images/categories/category_carpenter.png",
+                    "images/categories/category_cleaner.png",
+                    "images/categories/category_handyman.png"
             };
 
             SQLiteStatement catStmt = db.compileStatement(
-                    "INSERT INTO service_categories (category_name) VALUES (?)"
+                    "INSERT INTO service_categories (category_name, image_path) VALUES (?, ?)"
             );
 
-            for (String cat : categories) {
+            for (int i = 0; i < categories.length; i++) {
                 catStmt.clearBindings();
-                catStmt.bindString(1, cat);
+                catStmt.bindString(1, categories[i]);
+                catStmt.bindString(2, categoryIcons[i]);
                 catStmt.executeInsert();
             }
             catStmt.close();
 
             // ================= SERVICES (25 DATA) =================
+            // Image mapping based on category
+            String[] categoryImages = {
+                "images/services/service_ac_repair.png",      // Category 1: Servis AC
+                "images/services/service_electric.png",       // Category 2: Instalasi Listrik
+                "images/services/service_plumber.png",        // Category 3: Perbaikan Pipa
+                "images/services/service_cleaning.png",       // Category 4: Service Mesin Cuci
+                "images/services/service_carpenter.png"       // Category 5: Service Kulkas
+            };
+
+            // Service names based on category
+            String[][] serviceNames = {
+                {"Servis AC Rumah", "Instalasi AC Baru", "Perbaikan AC Bocor", "Cuci AC Rutin", "Isi Freon AC"},
+                {"Instalasi Listrik Rumah", "Perbaikan Korsleting", "Pasang Lampu LED", "Instalasi Stop Kontak", "Perbaikan MCB"},
+                {"Perbaikan Pipa Bocor", "Instalasi Pipa Baru", "Sedot WC", "Perbaikan Kran Air", "Instalasi Water Heater"},
+                {"Service Mesin Cuci 1 Tabung", "Service Mesin Cuci 2 Tabung", "Perbaikan Mesin Cuci Mati", "Ganti Spare Part Mesin Cuci", "Cuci Mesin Cuci"},
+                {"Service Kulkas 1 Pintu", "Service Kulkas 2 Pintu", "Perbaikan Kulkas Tidak Dingin", "Isi Freon Kulkas", "Ganti Thermostat Kulkas"}
+            };
+
             SQLiteStatement serviceStmt = db.compileStatement(
-                    "INSERT INTO services (service_name, description, price, technician_id, category_id) VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO services (service_name, description, price, technician_id, category_id, image_path) VALUES (?, ?, ?, ?, ?, ?)"
             );
 
             for (int i = 1; i <= 25; i++) {
+                int categoryIndex = (i - 1) / 5; // 0-4, each category gets 5 services
+                int serviceIndex = (i - 1) % 5;  // 0-4, service index within category
+                
                 serviceStmt.clearBindings();
-                serviceStmt.bindString(1, "Service #" + i);
-                serviceStmt.bindString(2, "Deskripsi layanan " + i);
+                serviceStmt.bindString(1, serviceNames[categoryIndex][serviceIndex]);
+                serviceStmt.bindString(2, "Layanan " + serviceNames[categoryIndex][serviceIndex] + " dengan teknisi profesional dan berpengalaman.");
                 serviceStmt.bindDouble(3, 50000 + (i * 10000));
                 serviceStmt.bindLong(4, (i % 20) + 1);   // technician
-                serviceStmt.bindLong(5, (i % 5) + 1);    // category
+                serviceStmt.bindLong(5, categoryIndex + 1);    // category (1-5)
+                serviceStmt.bindString(6, categoryImages[categoryIndex]); // image path
                 serviceStmt.executeInsert();
             }
             serviceStmt.close();

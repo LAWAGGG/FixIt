@@ -1,4 +1,4 @@
-package com.example.fixit_v2.fragments;
+ package com.example.fixit_v2.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -75,7 +75,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
-        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.spacing_small);
+        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.spacing_medium);
         binding.recyclerViewCategories.setLayoutManager(new GridLayoutManager(getContext(), 4));
         if (binding.recyclerViewCategories.getItemDecorationCount() == 0) { // Prevent adding multiple times
             binding.recyclerViewCategories.addItemDecoration(new GridSpacingItemDecoration(4, spacingInPixels, true));
@@ -85,26 +85,54 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupSearch() {
-        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        binding.btnSearch.setOnClickListener(v -> {
+            binding.textViewCategoriesTitle.setVisibility(View.GONE);
+            binding.btnSearch.setVisibility(View.GONE);
+            binding.searchContainer.setVisibility(View.VISIBLE);
+            binding.editTextSearch.requestFocus();
+            showKeyboard(binding.editTextSearch);
+        });
+
+        binding.btnCloseSearch.setOnClickListener(v -> {
+            binding.textViewCategoriesTitle.setVisibility(View.VISIBLE);
+            binding.btnSearch.setVisibility(View.VISIBLE);
+            binding.searchContainer.setVisibility(View.GONE);
+            binding.editTextSearch.setText("");
+            hideKeyboard(binding.editTextSearch);
+        });
+
+        binding.editTextSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                performSearch(query);
-                binding.searchView.clearFocus();
-                return true;
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().isEmpty()) {
                     if (isCurrentlySearching) {
                         resetToDefaultView();
                     }
                 } else {
-                    performSearch(newText);
+                    performSearch(s.toString());
                 }
-                return true;
             }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
         });
+    }
+
+    private void showKeyboard(View view) {
+        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void hideKeyboard(View view) {
+        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void performSearch(String keyword) {
@@ -143,7 +171,7 @@ public class HomeFragment extends Fragment {
             finalList = sortedServices.subList(0, 5);
         }
 
-        bestServiceAdapter = new BestServiceAdapter(getContext(), finalList, technicianDataSource, reviewDataSource);
+        bestServiceAdapter = new BestServiceAdapter(getContext(), finalList, technicianDataSource, reviewDataSource, serviceCategoryDataSource);
         binding.recyclerViewBestServices.setAdapter(bestServiceAdapter);
     }
 
@@ -183,7 +211,7 @@ public class HomeFragment extends Fragment {
         if (limit > 0) {
             displayedCategories.addAll(allCategories.subList(0, limit));
         }
-        displayedCategories.add(new ServiceCategory(-99, "All"));
+        displayedCategories.add(new ServiceCategory(-99, "All", null));
         HomeCategoryAdapter adapter = new HomeCategoryAdapter(getContext(), displayedCategories, userId);
         binding.recyclerViewCategories.setAdapter(adapter);
     }

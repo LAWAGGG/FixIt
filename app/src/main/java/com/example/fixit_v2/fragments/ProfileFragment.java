@@ -54,15 +54,9 @@ public class ProfileFragment extends Fragment {
 
     private void setupMenu() {
         // Setup menu item texts and icons
-        setupMenuItem(binding.menuEditProfile, R.drawable.ic_edit, "Edit Profile");
-        setupMenuItem(binding.menuPayment, R.drawable.ic_payment, "Payment");
-        setupMenuItem(binding.menuSettings, R.drawable.ic_settings, "Settings");
         setupMenuItem(binding.menuLogout, R.drawable.ic_logout, "Logout");
 
         // Setup click listeners
-        binding.menuEditProfile.getRoot().setOnClickListener(v -> showToast("Edit Profile clicked"));
-        binding.menuPayment.getRoot().setOnClickListener(v -> showToast("Payment clicked"));
-        binding.menuSettings.getRoot().setOnClickListener(v -> showToast("Settings clicked"));
         binding.menuLogout.getRoot().setOnClickListener(v -> logout());
     }
 

@@ -17,52 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="All Categories"
-        app:titleTextColor="@color/white" />
-
-    <!-- Search and Cart container -->
-    <LinearLayout
-        android:id="@+id/search_bar_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="@dimen/spacing_large"
-        android:layout_marginHorizontal="@dimen/spacing_large"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/glass_card_background"
-            app:queryHint="Search services..."
-            app:iconifiedByDefault="false" />
-
-<!--        <ImageView-->
-<!--            android:id="@+id/icon_cart"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:src="@drawable/ic_cart"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:paddingStart="@dimen/spacing_medium"-->
-<!--            android:paddingEnd="@dimen/spacing_medium"-->
-<!--            android:clickable="true"-->
-<!--            android:focusable="true"-->
-<!--            app:tint="@color/white" />-->
-    </LinearLayout>
-
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -70,13 +24,89 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_bar_container">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="@dimen/spacing_large">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/categoriesHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/spacing_large"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <TextView
+                    android:id="@+id/textViewCategoriesTitle"
+                    style="@style/TextAppearance.FixIt.Title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="All Categories"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btnSearch"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/btnSearch"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_search"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="@color/white" />
+
+                <LinearLayout
+                    android:id="@+id/searchContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/glass_card_background"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_medium"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/text_secondary_dark" />
+
+                    <EditText
+                        android:id="@+id/editTextSearch"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Search services..."
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:paddingStart="@dimen/spacing_small"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/text_secondary_dark"
+                        android:textSize="14sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnCloseSearch"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_logout"
+                        android:rotation="45"
+                        app:tint="@color/white" />
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewCategories"

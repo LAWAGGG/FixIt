@@ -1,60 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/booking_card_background"
-    android:descendantFocusability="blocksDescendants">
+    android:layout_marginBottom="@dimen/spacing_medium"
+    style="@style/Widget.FixIt.CardView.Glass"
+    app:cardBackgroundColor="@android:color/transparent">
 
-    <ImageView
-        android:id="@+id/imageViewServiceIcon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:src="@mipmap/ic_launcher" />
-
-    <LinearLayout
-        android:id="@+id/layout_text_details"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/imageViewServiceIcon"
-        android:layout_toStartOf="@+id/buttonMessage"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical">
+        android:background="@drawable/glass_card_background"
+        android:padding="@dimen/spacing_large">
 
+        <!-- Service Icon (Preserved from adapter logic, but styled) -->
+        <ImageView
+            android:id="@+id/imageViewServiceIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@mipmap/ic_launcher"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" /> 
+        <!-- Visibility gone by default as item_booking_card.xml didn't have it, but adapter requires ID to be present -->
+
+        <!-- Baris Atas: Nama Layanan dan Status -->
         <TextView
             android:id="@+id/textViewServiceName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Service Name"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textViewTechnicianName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Technician Name"/>
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/TextAppearance.FixIt.Title"
+            app:layout_constraintEnd_toStartOf="@+id/textViewStatus"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Service Name" />
 
         <TextView
             android:id="@+id/textViewStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status: Completed"
-            android:textStyle="italic"/>
+            android:background="@drawable/badge_background_pending"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="In Progress" />
 
-    </LinearLayout>
+        <!-- Baris Tengah: Nama Penyedia Jasa (Technician) -->
+        <TextView
+            android:id="@+id/textViewTechnicianName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            style="@style/TextAppearance.FixIt.Subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewServiceName"
+            tools:text="by Technician Name" />
 
-    <Button
-        android:id="@+id/buttonMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:text="Message" />
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:background="@color/card_glass_stroke"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewTechnicianName" />
 
-</RelativeLayout>
+        <!-- Baris Bawah: Tombol Aksi (WhatsApp & Cancel) -->
+        <Button
+            android:id="@+id/buttonCancelOrder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="Cancel Order"
+            android:textColor="@color/white"
+            android:backgroundTint="#FF5252"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <ImageButton
+            android:id="@+id/buttonMessage"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Message Technician"
+            android:src="@drawable/ic_message_bubble"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@id/buttonCancelOrder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/buttonCancelOrder"
+            app:tint="@color/primary" />
+        
+        <!-- Booking Date placeholder if needed, currently not supported by adapter -->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

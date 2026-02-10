@@ -1,10 +1,16 @@
 package com.example.fixit_v2.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fixit_v2.databinding.ActivityCreateServiceBinding;
@@ -12,6 +18,9 @@ import com.example.fixit_v2.datasource.ServiceCategoryDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.models.ServiceCategory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 public class CreateServiceActivity extends AppCompatActivity {
@@ -21,6 +30,8 @@ public class CreateServiceActivity extends AppCompatActivity {
     private ServiceDataSource serviceDataSource;
     private int technicianId;
     private List<ServiceCategory> categoryList;
+    private Uri selectedImageUri;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +51,35 @@ public class CreateServiceActivity extends AppCompatActivity {
         categoryDataSource = new ServiceCategoryDataSource(this);
         serviceDataSource = new ServiceDataSource(this);
 
+        setupImagePicker();
         setupToolbar();
         loadCategorySpinner();
+        
+        binding.buttonSelectImage.setOnClickListener(v -> openImagePicker());
         binding.buttonAddService.setOnClickListener(v -> addService());
     }
 
+    private void setupImagePicker() {
+        imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    binding.imageViewPreview.setImageURI(selectedImageUri);
+                    binding.imageViewPreview.setVisibility(View.VISIBLE);
+                    binding.buttonSelectImage.setText("Change Image");
+                }
+            }
+        );
+    }
+
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
+    }
+
     private void setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener(v -> finish()); // Go back to the previous screen
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void loadCategorySpinner() {
@@ -57,6 +90,44 @@ public class CreateServiceActivity extends AppCompatActivity {
         binding.spinnerCategories.setAdapter(categoryAdapter);
     }
 
+    private String saveImageToInternalStorage(String serviceName) {
+        if (selectedImageUri == null) {
+            return "";
+        }
+
+        try {
+            // Create services directory in internal storage
+            File servicesDir = new File(getFilesDir(), "services");
+            if (!servicesDir.exists()) {
+                servicesDir.mkdirs();
+            }
+
+            // Create filename from service name (sanitize)
+            String sanitizedName = serviceName.replaceAll("[^a-zA-Z0-9]", "_").toLowerCase();
+            String filename = "service_" + sanitizedName + ".jpg";
+            File imageFile = new File(servicesDir, filename);
+
+            // Copy image from URI to internal storage
+            InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+            
+            outputStream.close();
+            inputStream.close();
+
+            // Return relative path for database
+            return "services/" + filename;
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to save image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return "";
+        }
+    }
+
     private void addService() {
         String categoryString = binding.spinnerCategories.getText().toString();
         String serviceName = binding.editTextServiceName.getText().toString().trim();
@@ -64,7 +135,7 @@ public class CreateServiceActivity extends AppCompatActivity {
         String priceString = binding.editTextPrice.getText().toString().trim();
 
         if (categoryString.isEmpty() || serviceName.isEmpty() || description.isEmpty() || priceString.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fill all required fields.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -83,11 +154,16 @@ public class CreateServiceActivity extends AppCompatActivity {
 
         try {
             double price = Double.parseDouble(priceString);
+            
+            // Save image and get path
+            String imagePath = saveImageToInternalStorage(serviceName);
+            
             serviceDataSource.open();
-            serviceDataSource.createService(serviceName, description, price, technicianId, selectedCategory.getId());
+            serviceDataSource.createService(serviceName, description, price, technicianId, selectedCategory.getId(), imagePath);
             serviceDataSource.close();
+            
             Toast.makeText(this, "Service added successfully!", Toast.LENGTH_SHORT).show();
-            finish(); // Close this activity and return to the list
+            finish();
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid price format.", Toast.LENGTH_SHORT).show();
         }

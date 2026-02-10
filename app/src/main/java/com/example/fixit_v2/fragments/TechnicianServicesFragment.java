@@ -17,6 +17,7 @@ import com.example.fixit_v2.activities.CreateServiceActivity;
 import com.example.fixit_v2.adapters.BestServiceAdapter;
 import com.example.fixit_v2.databinding.FragmentTechnicianServicesBinding;
 import com.example.fixit_v2.datasource.ReviewDataSource;
+import com.example.fixit_v2.datasource.ServiceCategoryDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
 import com.example.fixit_v2.models.Service;
@@ -29,6 +30,7 @@ public class TechnicianServicesFragment extends Fragment {
     private ServiceDataSource serviceDataSource;
     private ReviewDataSource reviewDataSource; // Adapter dependency
     private TechnicianDataSource technicianDataSource; // Adapter dependency
+    private ServiceCategoryDataSource serviceCategoryDataSource; // Adapter dependency
     private int technicianId;
 
     @Nullable
@@ -46,6 +48,7 @@ public class TechnicianServicesFragment extends Fragment {
         serviceDataSource = new ServiceDataSource(getContext());
         reviewDataSource = new ReviewDataSource(getContext());
         technicianDataSource = new TechnicianDataSource(getContext());
+        serviceCategoryDataSource = new ServiceCategoryDataSource(getContext());
 
         setupRecyclerView();
         binding.fabAddService.setOnClickListener(v -> {
@@ -62,7 +65,7 @@ public class TechnicianServicesFragment extends Fragment {
 
     private void loadMyServices() {
         List<Service> myServices = serviceDataSource.getServicesByTechnician(technicianId);
-        BestServiceAdapter myServicesAdapter = new BestServiceAdapter(getContext(), myServices, technicianDataSource, reviewDataSource);
+        BestServiceAdapter myServicesAdapter = new BestServiceAdapter(getContext(), myServices, technicianDataSource, reviewDataSource, serviceCategoryDataSource);
         binding.recyclerViewMyServices.setAdapter(myServicesAdapter);
     }
 
@@ -72,6 +75,7 @@ public class TechnicianServicesFragment extends Fragment {
         serviceDataSource.open();
         reviewDataSource.open();
         technicianDataSource.open();
+        serviceCategoryDataSource.open();
         if (technicianId != -1) {
             loadMyServices();
         }
@@ -83,6 +87,7 @@ public class TechnicianServicesFragment extends Fragment {
         serviceDataSource.close();
         reviewDataSource.close();
         technicianDataSource.close();
+        serviceCategoryDataSource.close();
     }
 
     @Override

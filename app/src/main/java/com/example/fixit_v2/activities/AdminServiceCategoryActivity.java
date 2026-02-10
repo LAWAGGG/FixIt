@@ -74,7 +74,7 @@ public class AdminServiceCategoryActivity extends AppCompatActivity {
                 String name = editTextCategoryName.getText().toString();
 
                 if (category == null) {
-                    dataSource.createServiceCategory(name);
+                    dataSource.createServiceCategory(name, null);
                 } else {
                     category.setCategoryName(name);
                     dataSource.updateServiceCategory(category);

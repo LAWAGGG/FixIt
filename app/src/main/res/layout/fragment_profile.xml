@@ -46,29 +46,7 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_large">
 
-            <!-- Edit Profile -->
-            <include layout="@layout/item_profile_menu" android:id="@+id/menuEditProfile"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/card_glass_stroke"/>
-
-            <!-- Payment -->
-            <include layout="@layout/item_profile_menu" android:id="@+id/menuPayment"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/card_glass_stroke"/>
-
-            <!-- Settings -->
-            <include layout="@layout/item_profile_menu" android:id="@+id/menuSettings"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/card_glass_stroke"/>
+            <!-- Logout -->
 
             <!-- Logout -->
             <include layout="@layout/item_profile_menu" android:id="@+id/menuLogout"/>

@@ -72,6 +72,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="Rp 599.000" />
 
+        <TextView
+            android:id="@+id/textViewCategoryName"
+            style="@style/TextAppearance.FixIt.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_large"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/textViewDiscountPrice"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Category Name" />
+
         <ImageView
             android:id="@+id/imageViewProviderAvatar"
             android:layout_width="32dp"

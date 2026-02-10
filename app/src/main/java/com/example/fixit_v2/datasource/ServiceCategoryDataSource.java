@@ -16,7 +16,7 @@ public class ServiceCategoryDataSource {
 
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
-    private String[] allColumns = { DatabaseHelper.KEY_ID, DatabaseHelper.KEY_CATEGORY_NAME };
+    private String[] allColumns = { DatabaseHelper.KEY_ID, DatabaseHelper.KEY_CATEGORY_NAME, DatabaseHelper.KEY_IMAGE_PATH };
 
     public ServiceCategoryDataSource(Context context) {
         dbHelper = new DatabaseHelper(context);
@@ -30,9 +30,10 @@ public class ServiceCategoryDataSource {
         dbHelper.close();
     }
 
-    public ServiceCategory createServiceCategory(String categoryName) {
+    public ServiceCategory createServiceCategory(String categoryName, String imagePath) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_CATEGORY_NAME, categoryName);
+        values.put(DatabaseHelper.KEY_IMAGE_PATH, imagePath);
         long insertId = database.insert(DatabaseHelper.TABLE_SERVICE_CATEGORIES, null, values);
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICE_CATEGORIES, allColumns, DatabaseHelper.KEY_ID + " = " + insertId, null, null, null, null);
         cursor.moveToFirst();
@@ -45,6 +46,7 @@ public class ServiceCategoryDataSource {
         long id = category.getId();
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_CATEGORY_NAME, category.getCategoryName());
+        values.put(DatabaseHelper.KEY_IMAGE_PATH, category.getImagePath());
         return database.update(DatabaseHelper.TABLE_SERVICE_CATEGORIES, values, DatabaseHelper.KEY_ID + " = " + id, null);
     }
 
@@ -78,6 +80,6 @@ public class ServiceCategoryDataSource {
     }
 
     private ServiceCategory cursorToServiceCategory(Cursor cursor) {
-        return new ServiceCategory(cursor.getInt(0), cursor.getString(1));
+        return new ServiceCategory(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
     }
 }

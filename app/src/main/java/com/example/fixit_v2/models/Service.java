@@ -12,14 +12,16 @@ public class Service {
     private double price;
     private int technicianId;
     private int categoryId;
+    private String imagePath;
 
-    public Service(int id, String serviceName, String description, double price, int technicianId, int categoryId) {
+    public Service(int id, String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
         this.id = id;
         this.serviceName = serviceName;
         this.description = description;
         this.price = price;
         this.technicianId = technicianId;
         this.categoryId = categoryId;
+        this.imagePath = imagePath;
     }
 
     // Getters and Setters
@@ -69,6 +71,14 @@ public class Service {
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     @NonNull

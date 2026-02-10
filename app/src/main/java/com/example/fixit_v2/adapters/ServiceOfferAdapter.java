@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 
 import com.example.fixit_v2.R;
 import com.example.fixit_v2.datasource.ReviewDataSource;
+import com.example.fixit_v2.datasource.ServiceCategoryDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
 import com.example.fixit_v2.models.Service;
 import com.example.fixit_v2.models.Technician;
@@ -27,12 +28,14 @@ public class ServiceOfferAdapter extends ArrayAdapter<Service> {
     private Context context;
     private TechnicianDataSource technicianDataSource;
     private ReviewDataSource reviewDataSource;
+    private ServiceCategoryDataSource categoryDataSource;
 
-    public ServiceOfferAdapter(@NonNull Context context, @NonNull List<Service> services, TechnicianDataSource techDS, ReviewDataSource reviewDS) {
+    public ServiceOfferAdapter(@NonNull Context context, @NonNull List<Service> services, TechnicianDataSource techDS, ReviewDataSource reviewDS, ServiceCategoryDataSource categoryDS) {
         super(context, R.layout.card_best_service, services);
         this.context = context;
         this.technicianDataSource = techDS;
         this.reviewDataSource = reviewDS;
+        this.categoryDataSource = categoryDS;
     }
 
     @NonNull
@@ -48,6 +51,7 @@ public class ServiceOfferAdapter extends ArrayAdapter<Service> {
             TextView serviceName = convertView.findViewById(R.id.textViewServiceName);
             TextView servicePrice = convertView.findViewById(R.id.textViewServicePrice);
             TextView techName = convertView.findViewById(R.id.textViewTechnicianName);
+            TextView categoryName = convertView.findViewById(R.id.textViewCategoryName);
             RatingBar ratingBar = convertView.findViewById(R.id.ratingBarService);
             ImageView techImage = convertView.findViewById(R.id.imageViewTechnician);
 
@@ -56,6 +60,11 @@ public class ServiceOfferAdapter extends ArrayAdapter<Service> {
             NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
             format.setMaximumFractionDigits(0);
             servicePrice.setText(format.format(service.getPrice()));
+
+            if (categoryDataSource != null) {
+                com.example.fixit_v2.models.ServiceCategory category = categoryDataSource.getServiceCategoryById(service.getCategoryId());
+                categoryName.setText(category != null ? category.getCategoryName() : "Unknown Category");
+            }
 
             Technician technician = technicianDataSource.getTechnicianById(service.getTechnicianId());
             techName.setText(technician != null ? technician.getName() : "Unknown");
