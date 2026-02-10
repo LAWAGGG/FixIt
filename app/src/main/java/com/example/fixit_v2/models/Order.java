@@ -9,14 +9,22 @@ public class Order {
     private String address;
     private String orderDate;
     private String status;
+    private String notes;
+    private String completionImage;
+    private String paymentMethod;
+    private String paymentStatus;
 
-    public Order(int id, int userId, int serviceId, String address, String orderDate, String status) {
+    public Order(int id, int userId, int serviceId, String address, String orderDate, String status, String notes, String completionImage, String paymentMethod, String paymentStatus) {
         this.id = id;
         this.userId = userId;
         this.serviceId = serviceId;
         this.address = address;
         this.orderDate = orderDate;
         this.status = status;
+        this.notes = notes;
+        this.completionImage = completionImage;
+        this.paymentMethod = paymentMethod;
+        this.paymentStatus = paymentStatus;
     }
 
     // Getters and Setters
@@ -68,11 +76,41 @@ public class Order {
         this.status = status;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public String getCompletionImage() {
+        return completionImage;
+    }
+
+    public void setCompletionImage(String completionImage) {
+        this.completionImage = completionImage;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
     @NonNull
     @Override
     public String toString() {
-        // This needs to be updated to show service name, which requires another DB query.
-        // For now, we'll keep it simple.
-        return "Order ID: " + id + "\nAlamat: " + address + " | Status: " + status;
+        return "Order ID: " + id + "\nAlamat: " + address + " | Status: " + status + (notes != null ? "\nCatatan: " + notes : "");
     }
 }

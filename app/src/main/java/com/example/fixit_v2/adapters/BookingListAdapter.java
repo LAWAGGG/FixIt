@@ -139,16 +139,11 @@ public class BookingListAdapter extends RecyclerView.Adapter<BookingListAdapter.
                 buttonCancelOrder.setVisibility(View.GONE);
             }
 
-            // Handle click on the whole item for review
+            // Handle click on the whole item for details
             itemView.setOnClickListener(v -> {
-                if ("Selesai".equals(order.getStatus())) {
-                    Intent intent = new Intent(context, CreateReviewActivity.class);
-                    intent.putExtra("SERVICE_ID", order.getServiceId());
-                    intent.putExtra("USER_ID", userId);
-                    context.startActivity(intent);
-                } else {
-                    Toast.makeText(context, "You can only review completed orders.", Toast.LENGTH_SHORT).show();
-                }
+                Intent intent = new Intent(context, com.example.fixit_v2.activities.OrderDetailActivity.class);
+                intent.putExtra("ORDER_ID", order.getId());
+                context.startActivity(intent);
             });
         }
     }

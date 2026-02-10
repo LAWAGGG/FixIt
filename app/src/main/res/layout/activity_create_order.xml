@@ -140,6 +140,28 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="Notes / Problem Description"
+                        android:textColor="@color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <EditText
+                        android:id="@+id/editTextNotes"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:background="@drawable/input_field_background"
+                        android:hint="Tell the technician about your problem..."
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine"
+                        android:padding="16dp"
+                        android:textColor="@color/white"
+                        android:textColorHint="#80FFFFFF"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="Payment Method"
                         android:textColor="@color/white"
                         android:layout_marginTop="16dp"

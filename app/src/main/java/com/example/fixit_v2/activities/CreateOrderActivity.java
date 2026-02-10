@@ -167,6 +167,7 @@ public class CreateOrderActivity extends AppCompatActivity {
     private void placeOrder() {
         String address = binding.editTextAddress.getText().toString();
         String orderDate = binding.editTextOrderDate.getText().toString();
+        String notes = binding.editTextNotes.getText().toString().trim();
 
         if (address.isEmpty() || orderDate.isEmpty() || selectedPaymentMethod.isEmpty()) {
             Toast.makeText(this, "Please fill all fields and select a payment method.", Toast.LENGTH_SHORT).show();
@@ -178,7 +179,8 @@ public class CreateOrderActivity extends AppCompatActivity {
         String dbFormattedDate = dbFormat.format(calendar.getTime());
 
         orderDataSource.open();
-        orderDataSource.createOrder(userId, serviceId, address, dbFormattedDate, "Pending");
+        // Initial status is "Pending", initial payment status is "Waiting"
+        orderDataSource.createOrder(userId, serviceId, address, dbFormattedDate, "Pending", notes, selectedPaymentMethod, "Waiting");
         orderDataSource.close();
 
         Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
