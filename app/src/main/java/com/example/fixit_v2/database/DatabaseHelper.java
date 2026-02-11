@@ -8,10 +8,17 @@ import android.database.sqlite.SQLiteStatement;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "FixIt.db";
-    private static final int DATABASE_VERSION = 25; // Added payment_method and payment_status to orders
+    private static final int DATABASE_VERSION = 26; // Added complaints table
 
     public static final String KEY_PAYMENT_METHOD = "payment_method";
     public static final String KEY_PAYMENT_STATUS = "payment_status";
+    
+    // Complaints Table Keys
+    public static final String TABLE_COMPLAINTS = "complaints";
+    public static final String KEY_COMPLAINT_DESCRIPTION = "description";
+    public static final String KEY_COMPLAINT_PHOTO_PATH = "photo_path";
+    public static final String KEY_COMPLAINT_STATUS = "status";
+    public static final String KEY_CREATED_AT = "created_at";
 
     public static final String TABLE_USERS = "users";
     public static final String TABLE_TECHNICIANS = "technicians";
@@ -56,6 +63,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_ORDERS = "CREATE TABLE " + TABLE_ORDERS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USER_ID + " INTEGER, " + KEY_SERVICE_ID + " INTEGER, " + KEY_ADDRESS + " TEXT NOT NULL, " + KEY_ORDER_DATE + " TEXT NOT NULL, " + KEY_STATUS + " TEXT NOT NULL, " + KEY_NOTES + " TEXT, " + KEY_COMPLETION_IMAGE + " TEXT, " + KEY_PAYMENT_METHOD + " TEXT, " + KEY_PAYMENT_STATUS + " TEXT, FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_PAYMENTS = "CREATE TABLE " + TABLE_PAYMENTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_METHOD + " TEXT NOT NULL, " + KEY_AMOUNT + " REAL NOT NULL, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_REVIEWS = "CREATE TABLE " + TABLE_REVIEWS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_ID + " INTEGER, " + KEY_USER_ID + " INTEGER, " + KEY_RATING + " INTEGER, " + KEY_COMMENT + " TEXT, FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "));";
+    private static final String CREATE_TABLE_COMPLAINTS = "CREATE TABLE " + TABLE_COMPLAINTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_COMPLAINT_DESCRIPTION + " TEXT NOT NULL, " + KEY_COMPLAINT_PHOTO_PATH + " TEXT, " + KEY_COMPLAINT_STATUS + " TEXT NOT NULL, " + KEY_CREATED_AT + " TEXT NOT NULL, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
 
 
     public DatabaseHelper(Context context) {
@@ -71,25 +79,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_ORDERS);
         db.execSQL(CREATE_TABLE_PAYMENTS);
         db.execSQL(CREATE_TABLE_REVIEWS);
-        seedData(db);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_REVIEWS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PAYMENTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICE_CATEGORIES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TECHNICIANS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        onCreate(db);
-    }
-
-    private void seedData(SQLiteDatabase db) {
+        db.execSQL(CREATE_TABLE_COMPLAINTS);
+        
+        // Seeding data is handled in the transaction block below to prevent duplicates checking and ensure consistency.
         db.beginTransaction();
         try {
-
             // ================= USERS =================
             String sqlUser = "INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)";
             SQLiteStatement userStmt = db.compileStatement(sqlUser);
@@ -252,4 +246,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TECHNICIANS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICE_CATEGORIES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PAYMENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_REVIEWS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COMPLAINTS);
+        onCreate(db);
+    }
 }

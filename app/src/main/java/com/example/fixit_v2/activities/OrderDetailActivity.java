@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fixit_v2.R;
 import com.example.fixit_v2.databinding.ActivityOrderDetailBinding;
+import com.example.fixit_v2.datasource.ComplaintDataSource;
 import com.example.fixit_v2.datasource.OrderDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
@@ -104,8 +105,8 @@ public class OrderDetailActivity extends AppCompatActivity {
         setupTimeline(order.getStatus());
         setupCompletionProof(order.getCompletionImage());
 
-        // Review Button Logic
-        if (order.getStatus().equalsIgnoreCase("Completed")) {
+        // Review and Complaint Button Logic
+        if (order.getStatus().equalsIgnoreCase("Completed") || order.getStatus().equalsIgnoreCase("Finished")) {
             binding.buttonReview.setVisibility(View.VISIBLE);
             binding.buttonReview.setOnClickListener(v -> {
                 Intent intent = new Intent(this, CreateReviewActivity.class);
@@ -113,8 +114,31 @@ public class OrderDetailActivity extends AppCompatActivity {
                 intent.putExtra("USER_ID", getUserIdFromSession());
                 startActivity(intent);
             });
+
+            // Complaint Logic
+            ComplaintDataSource complaintDataSource = new ComplaintDataSource(this);
+            complaintDataSource.open();
+            com.example.fixit_v2.models.Complaint existingComplaint = complaintDataSource.getComplaintByOrderId(orderId);
+            
+            binding.buttonComplaint.setVisibility(View.VISIBLE);
+            if (existingComplaint != null) {
+                binding.buttonComplaint.setText("Complaint Filed (" + existingComplaint.getStatus() + ")");
+                binding.buttonComplaint.setEnabled(false);
+                binding.buttonComplaint.setAlpha(0.7f);
+            } else {
+                binding.buttonComplaint.setText("File Complaint");
+                binding.buttonComplaint.setEnabled(true);
+                binding.buttonComplaint.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, ComplaintActivity.class);
+                    intent.putExtra("ORDER_ID", orderId);
+                    startActivity(intent);
+                });
+            }
+            complaintDataSource.close();
+
         } else {
             binding.buttonReview.setVisibility(View.GONE);
+            binding.buttonComplaint.setVisibility(View.GONE);
         }
 
         orderDataSource.close();

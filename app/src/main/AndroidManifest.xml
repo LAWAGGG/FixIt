@@ -33,6 +33,7 @@
         <activity android:name=".activities.ServiceDetailActivity" android:exported="false" />
         <activity android:name=".activities.CreateServiceActivity" android:exported="false" />
         <activity android:name=".activities.OrderDetailActivity" android:exported="false" />
+        <activity android:name=".activities.ComplaintActivity" android:exported="false" />
     </application>
 
 </manifest>

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fixit_v2.R;
 import com.example.fixit_v2.databinding.CardTechnicianOrderBinding;
+import com.example.fixit_v2.datasource.ComplaintDataSource;
 import com.example.fixit_v2.datasource.OrderDataSource;
 import com.example.fixit_v2.datasource.ServiceDataSource;
 import com.example.fixit_v2.datasource.TechnicianDataSource;
@@ -89,13 +90,127 @@ public class TechnicianOrderAdapter extends RecyclerView.Adapter<TechnicianOrder
             }
 
             String currentStatus = order.getStatus().toLowerCase();
-            if (currentStatus.contains("completed") || currentStatus.contains("canceled")) {
-                binding.textViewStatus.setOnClickListener(null);
-                binding.textViewStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0); // No arrow
+            
+            // Complaint Check
+            ComplaintDataSource complaintDS = new ComplaintDataSource(context);
+            complaintDS.open();
+            com.example.fixit_v2.models.Complaint complaint = complaintDS.getComplaintByOrderId(order.getId());
+            complaintDS.close();
+
+            if (complaint != null && !complaint.getStatus().equalsIgnoreCase("Resolved")) {
+                // Active Complaint
+                binding.textViewStatus.setText("Status: COMPLAINT FILED");
+                binding.textViewStatus.setTextColor(android.graphics.Color.RED);
+                binding.textViewStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0);
+                binding.textViewStatus.setOnClickListener(v -> showComplaintDialog(context, complaint, order));
             } else {
-                binding.textViewStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0); // Add arrow
-                binding.textViewStatus.setOnClickListener(v -> showStatusMenu(v, order, currentStatus));
+                // Normal Status
+                binding.textViewStatus.setTextColor(context.getResources().getColor(android.R.color.tab_indicator_text)); // Default color
+                if (currentStatus.contains("completed") || currentStatus.contains("canceled") || currentStatus.contains("finished")) {
+                    binding.textViewStatus.setOnClickListener(null);
+                    binding.textViewStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0); // No arrow
+                } else {
+                    binding.textViewStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_down, 0); // Add arrow
+                    binding.textViewStatus.setOnClickListener(v -> showStatusMenu(v, order, currentStatus));
+                }
             }
+        }
+
+        private void showComplaintDialog(Context context, com.example.fixit_v2.models.Complaint complaint, com.example.fixit_v2.models.Order order) {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+            builder.setTitle("Customer Complaint");
+
+            View dialogView = LayoutInflater.from(context).inflate(R.layout.activity_complaint, null, false); 
+            // Reuse layout or create simple view programmatically for speed
+            
+            // Let's create a simple layout programmatically to avoid inflating a full activity layout that might have issues
+            android.widget.LinearLayout layout = new android.widget.LinearLayout(context);
+            layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+            layout.setPadding(50, 40, 50, 40);
+
+            android.widget.TextView tvDesc = new android.widget.TextView(context);
+            tvDesc.setText("Problem:\n" + complaint.getDescription());
+            tvDesc.setTextSize(16);
+            layout.addView(tvDesc);
+
+            if (complaint.getPhotoPath() != null) {
+                android.widget.ImageView ivPhoto = new android.widget.ImageView(context);
+                layout.addView(ivPhoto);
+                ivPhoto.getLayoutParams().height = 500;
+                
+                java.io.File imgFile = new java.io.File(context.getFilesDir(), complaint.getPhotoPath());
+                if (imgFile.exists()) {
+                    android.graphics.Bitmap myBitmap = android.graphics.BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    ivPhoto.setImageBitmap(myBitmap);
+                }
+            }
+
+            builder.setView(layout);
+
+            builder.setPositiveButton("Resolve Complaint", (dialog, which) -> {
+                ComplaintDataSource ds = new ComplaintDataSource(context);
+                ds.open();
+                // We need a method to update status. For now, we'll just re-insert or update generic if not exists
+                 android.content.ContentValues values = new android.content.ContentValues();
+                 values.put("status", "Resolved");
+                 // Using a raw update since we didn't add update method in DataSource yet. 
+                 // Ideally we should add it, but for now accessing db through helper is tricky without opening it.
+                 // Let's rely on the DataSource having appropriate access or add the method.
+                 
+                 // Since I cannot easily modify DataSource in this same block efficiently without a separate tool call,
+                 // I will assume I can add a raw SQL execution (or I'll add the method in next step if this fails).
+                 // Actually, let's just add the method to DataSource first to be clean.
+            });
+            
+            // Wait, I can't update without the method. I'll defer the logic to a separate method in this class 
+            // that opens a DB connection and runs raw SQL if needed, or better, I should update ComplaintDataSource first.
+            // But I'm in the middle of editing this file.
+            
+            // Let's change the button to just a Toast "Marking as resolved..." and do the DB update via a helper checking
+            // Or better, I'll update the `ComplaintDataSource` in parallel or before this. 
+            // Since I'm already here, I will modify this file to use a method `resolveComplaint` that I will implement.
+            
+            builder.setPositiveButton("Resolve Complaint", (dialog, which) -> {
+                resolveComplaint(complaint, order); // Changed to pass order
+            });
+            
+            builder.setNegativeButton("Close", null);
+            builder.show();
+        }
+
+        private void resolveComplaint(com.example.fixit_v2.models.Complaint complaint, com.example.fixit_v2.models.Order order) {
+             ComplaintDataSource ds = new ComplaintDataSource(context);
+             ds.open();
+             ds.updateComplaintStatus(complaint.getId(), "Resolved");
+             ds.close();
+
+             // REFUND LOGIC
+             // 1. Get Service Price
+             Service service = serviceDataSource.getServiceById(order.getServiceId());
+             double price = (service != null) ? service.getPrice() : 0;
+
+             // 2. Deduct from Technician Earnings
+             if (price > 0 && service != null) {
+                 TechnicianDataSource techDS = new TechnicianDataSource(context);
+                 techDS.open();
+                 Technician technician = techDS.getTechnicianById(service.getTechnicianId());
+                 if (technician != null) {
+                     double currentEarnings = technician.getEarnings();
+                     // Prevent negative earnings if necessary, but for now just deduct
+                     double newEarnings = currentEarnings - price;
+                     techDS.updateTechnicianEarnings(service.getTechnicianId(), newEarnings);
+                 }
+                 techDS.close();
+             }
+
+             // 3. Update Payment Status to Refunded
+             int rows = orderDataSource.updatePaymentStatus(order.getId(), "Refunded");
+             if (rows > 0) {
+                order.setPaymentStatus("Refunded");
+             }
+
+             Toast.makeText(context, "Complaint Resolved & Payment Refunded", Toast.LENGTH_SHORT).show();
+             notifyItemChanged(getAdapterPosition());
         }
 
         private void showStatusMenu(View anchor, final Order order, String currentStatus) {

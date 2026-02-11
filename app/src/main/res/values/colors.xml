@@ -5,6 +5,7 @@
     <color name="secondary">#00E5FF</color>
 
     <!-- Background Colors -->
+    <color name="background_color">#0B0F1A</color>
     <color name="background_dark">#0B0F1A</color>
     <color name="gradient_start_dark">#0B0F1A</color>
     <color name="gradient_center_dark">#0D0D26</color>
@@ -13,6 +14,7 @@
     <!-- Card & Component Colors -->
     <color name="card_glass_background">#14FFFFFF</color> <!-- 8% white -->
     <color name="card_glass_stroke">#33FFFFFF</color> <!-- 20% white -->
+    <color name="card_background_status_canceled">#FF0000</color>
 
     <!-- Text Colors -->
     <color name="text_primary_dark">#FFFFFF</color>
