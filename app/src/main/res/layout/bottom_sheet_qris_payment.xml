@@ -4,28 +4,44 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
+    android:background="@color/background_dark"
     android:gravity="center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Scan QRIS to Pay"
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="24dp"/>
 
     <ImageView
         android:id="@+id/imageViewQrisCode"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:src="@android:drawable/ic_menu_camera"
-        android:contentDescription="QRIS Code"/>
+        android:src="@drawable/ic_misc_category"
+        android:contentDescription="QRIS Code"
+        android:background="#FFFFFF"
+        android:scaleType="centerCrop"/>
+        
+    <TextView
+        android:id="@+id/textViewNoQris"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No QRIS Image Available"
+        android:textColor="@color/secondary"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/buttonConfirmQris"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_marginTop="24dp"
-        android:text="Saya Sudah Membayar" />
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:text="I Have Scanned/Paid" />
 
 </LinearLayout>

@@ -120,20 +120,61 @@ public class TechnicianOrderAdapter extends RecyclerView.Adapter<TechnicianOrder
             android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
             builder.setTitle("Customer Complaint");
 
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.activity_complaint, null, false); 
-            // Reuse layout or create simple view programmatically for speed
-            
-            // Let's create a simple layout programmatically to avoid inflating a full activity layout that might have issues
+            // Custom Layout for Read-Only View
             android.widget.LinearLayout layout = new android.widget.LinearLayout(context);
             layout.setOrientation(android.widget.LinearLayout.VERTICAL);
             layout.setPadding(50, 40, 50, 40);
 
+            // 1. Status Indicator
+            android.widget.TextView tvStatus = new android.widget.TextView(context);
+            tvStatus.setText("Status: " + complaint.getStatus());
+            tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+            tvStatus.setTextSize(18);
+            tvStatus.setPadding(0, 0, 0, 20);
+            
+            if ("Resolved".equalsIgnoreCase(complaint.getStatus()) || "Refunded".equalsIgnoreCase(complaint.getStatus())) {
+                tvStatus.setTextColor(android.graphics.Color.GREEN);
+            } else if ("Rejected".equalsIgnoreCase(complaint.getStatus())) {
+                tvStatus.setTextColor(android.graphics.Color.RED);
+            } else {
+                tvStatus.setTextColor(android.graphics.Color.parseColor("#FF9800")); // Orange
+            }
+            layout.addView(tvStatus);
+            
+            // 2. Admin Comment (if any)
+            if (complaint.getAdminComment() != null && !complaint.getAdminComment().isEmpty()) {
+                 android.widget.TextView tvCommentTitle = new android.widget.TextView(context);
+                 tvCommentTitle.setText("Admin Message:");
+                 tvCommentTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+                 layout.addView(tvCommentTitle);
+
+                 android.widget.TextView tvComment = new android.widget.TextView(context);
+                 tvComment.setText(complaint.getAdminComment());
+                 tvComment.setTextSize(14);
+                 tvComment.setTextColor(android.graphics.Color.DKGRAY);
+                 tvComment.setPadding(0, 5, 0, 30);
+                 layout.addView(tvComment);
+            }
+
+            // 3. Complaint Description
+            android.widget.TextView tvDescTitle = new android.widget.TextView(context);
+            tvDescTitle.setText("Complaint Description:");
+            tvDescTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+            layout.addView(tvDescTitle);
+
             android.widget.TextView tvDesc = new android.widget.TextView(context);
-            tvDesc.setText("Problem:\n" + complaint.getDescription());
+            tvDesc.setText(complaint.getDescription());
             tvDesc.setTextSize(16);
+            tvDesc.setPadding(0, 5, 0, 30);
             layout.addView(tvDesc);
 
+            // 4. Photo Proof
             if (complaint.getPhotoPath() != null) {
+                android.widget.TextView tvPhotoTitle = new android.widget.TextView(context);
+                tvPhotoTitle.setText("Photo Proof:");
+                tvPhotoTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+                layout.addView(tvPhotoTitle);
+
                 android.widget.ImageView ivPhoto = new android.widget.ImageView(context);
                 layout.addView(ivPhoto);
                 ivPhoto.getLayoutParams().height = 500;
@@ -146,71 +187,8 @@ public class TechnicianOrderAdapter extends RecyclerView.Adapter<TechnicianOrder
             }
 
             builder.setView(layout);
-
-            builder.setPositiveButton("Resolve Complaint", (dialog, which) -> {
-                ComplaintDataSource ds = new ComplaintDataSource(context);
-                ds.open();
-                // We need a method to update status. For now, we'll just re-insert or update generic if not exists
-                 android.content.ContentValues values = new android.content.ContentValues();
-                 values.put("status", "Resolved");
-                 // Using a raw update since we didn't add update method in DataSource yet. 
-                 // Ideally we should add it, but for now accessing db through helper is tricky without opening it.
-                 // Let's rely on the DataSource having appropriate access or add the method.
-                 
-                 // Since I cannot easily modify DataSource in this same block efficiently without a separate tool call,
-                 // I will assume I can add a raw SQL execution (or I'll add the method in next step if this fails).
-                 // Actually, let's just add the method to DataSource first to be clean.
-            });
-            
-            // Wait, I can't update without the method. I'll defer the logic to a separate method in this class 
-            // that opens a DB connection and runs raw SQL if needed, or better, I should update ComplaintDataSource first.
-            // But I'm in the middle of editing this file.
-            
-            // Let's change the button to just a Toast "Marking as resolved..." and do the DB update via a helper checking
-            // Or better, I'll update the `ComplaintDataSource` in parallel or before this. 
-            // Since I'm already here, I will modify this file to use a method `resolveComplaint` that I will implement.
-            
-            builder.setPositiveButton("Resolve Complaint", (dialog, which) -> {
-                resolveComplaint(complaint, order); // Changed to pass order
-            });
-            
-            builder.setNegativeButton("Close", null);
+            builder.setPositiveButton("Close", null); // Read-only
             builder.show();
-        }
-
-        private void resolveComplaint(com.example.fixit_v2.models.Complaint complaint, com.example.fixit_v2.models.Order order) {
-             ComplaintDataSource ds = new ComplaintDataSource(context);
-             ds.open();
-             ds.updateComplaintStatus(complaint.getId(), "Resolved");
-             ds.close();
-
-             // REFUND LOGIC
-             // 1. Get Service Price
-             Service service = serviceDataSource.getServiceById(order.getServiceId());
-             double price = (service != null) ? service.getPrice() : 0;
-
-             // 2. Deduct from Technician Earnings
-             if (price > 0 && service != null) {
-                 TechnicianDataSource techDS = new TechnicianDataSource(context);
-                 techDS.open();
-                 Technician technician = techDS.getTechnicianById(service.getTechnicianId());
-                 if (technician != null) {
-                     double currentEarnings = technician.getEarnings();
-                     // Prevent negative earnings if necessary, but for now just deduct
-                     double newEarnings = currentEarnings - price;
-                     techDS.updateTechnicianEarnings(service.getTechnicianId(), newEarnings);
-                 }
-                 techDS.close();
-             }
-
-             // 3. Update Payment Status to Refunded
-             int rows = orderDataSource.updatePaymentStatus(order.getId(), "Refunded");
-             if (rows > 0) {
-                order.setPaymentStatus("Refunded");
-             }
-
-             Toast.makeText(context, "Complaint Resolved & Payment Refunded", Toast.LENGTH_SHORT).show();
-             notifyItemChanged(getAdapterPosition());
         }
 
         private void showStatusMenu(View anchor, final Order order, String currentStatus) {

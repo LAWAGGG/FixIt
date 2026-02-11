@@ -8,17 +8,21 @@ import android.database.sqlite.SQLiteStatement;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "FixIt.db";
-    private static final int DATABASE_VERSION = 26; // Added complaints table
-
+    private static final int DATABASE_VERSION = 30; // Changed default QRIS to .jpeg
+    
     public static final String KEY_PAYMENT_METHOD = "payment_method";
     public static final String KEY_PAYMENT_STATUS = "payment_status";
     
+    // Services Key
+    public static final String KEY_QRIS_PATH = "qris_path"; // New Key
+
     // Complaints Table Keys
     public static final String TABLE_COMPLAINTS = "complaints";
     public static final String KEY_COMPLAINT_DESCRIPTION = "description";
     public static final String KEY_COMPLAINT_PHOTO_PATH = "photo_path";
     public static final String KEY_COMPLAINT_STATUS = "status";
     public static final String KEY_CREATED_AT = "created_at";
+    public static final String KEY_COMPLAINT_ADMIN_COMMENT = "admin_comment";
 
     public static final String TABLE_USERS = "users";
     public static final String TABLE_TECHNICIANS = "technicians";
@@ -59,11 +63,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_USERS = "CREATE TABLE " + TABLE_USERS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USERNAME + " TEXT UNIQUE NOT NULL, " + KEY_PASSWORD + " TEXT NOT NULL, " + KEY_EMAIL + " TEXT NOT NULL, " + KEY_PHONE + " TEXT, " + KEY_ROLE + " TEXT NOT NULL);";
     private static final String CREATE_TABLE_TECHNICIANS = "CREATE TABLE " + TABLE_TECHNICIANS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USER_ID + " INTEGER, " + KEY_NAME + " TEXT NOT NULL, " + KEY_PHONE_NUMBER + " TEXT, " + KEY_EARNINGS + " REAL DEFAULT 0, FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_SERVICE_CATEGORIES = "CREATE TABLE " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_CATEGORY_NAME + " TEXT NOT NULL, " + KEY_IMAGE_PATH + " TEXT);";
-    private static final String CREATE_TABLE_SERVICES = "CREATE TABLE " + TABLE_SERVICES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_NAME + " TEXT NOT NULL, " + KEY_DESCRIPTION + " TEXT, " + KEY_PRICE + " REAL NOT NULL, " + KEY_TECHNICIAN_ID + " INTEGER, " + KEY_CATEGORY_ID + " INTEGER, " + KEY_IMAGE_PATH + " TEXT, FOREIGN KEY(" + KEY_TECHNICIAN_ID + ") REFERENCES " + TABLE_TECHNICIANS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_CATEGORY_ID + ") REFERENCES " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + "));";
+    private static final String CREATE_TABLE_SERVICES = "CREATE TABLE " + TABLE_SERVICES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_NAME + " TEXT NOT NULL, " + KEY_DESCRIPTION + " TEXT, " + KEY_PRICE + " REAL NOT NULL, " + KEY_TECHNICIAN_ID + " INTEGER, " + KEY_CATEGORY_ID + " INTEGER, " + KEY_IMAGE_PATH + " TEXT, " + KEY_QRIS_PATH + " TEXT, FOREIGN KEY(" + KEY_TECHNICIAN_ID + ") REFERENCES " + TABLE_TECHNICIANS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_CATEGORY_ID + ") REFERENCES " + TABLE_SERVICE_CATEGORIES + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_ORDERS = "CREATE TABLE " + TABLE_ORDERS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_USER_ID + " INTEGER, " + KEY_SERVICE_ID + " INTEGER, " + KEY_ADDRESS + " TEXT NOT NULL, " + KEY_ORDER_DATE + " TEXT NOT NULL, " + KEY_STATUS + " TEXT NOT NULL, " + KEY_NOTES + " TEXT, " + KEY_COMPLETION_IMAGE + " TEXT, " + KEY_PAYMENT_METHOD + " TEXT, " + KEY_PAYMENT_STATUS + " TEXT, FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_PAYMENTS = "CREATE TABLE " + TABLE_PAYMENTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_METHOD + " TEXT NOT NULL, " + KEY_AMOUNT + " REAL NOT NULL, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
     private static final String CREATE_TABLE_REVIEWS = "CREATE TABLE " + TABLE_REVIEWS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SERVICE_ID + " INTEGER, " + KEY_USER_ID + " INTEGER, " + KEY_RATING + " INTEGER, " + KEY_COMMENT + " TEXT, FOREIGN KEY(" + KEY_SERVICE_ID + ") REFERENCES " + TABLE_SERVICES + "(" + KEY_ID + "), FOREIGN KEY(" + KEY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + KEY_ID + "));";
-    private static final String CREATE_TABLE_COMPLAINTS = "CREATE TABLE " + TABLE_COMPLAINTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_COMPLAINT_DESCRIPTION + " TEXT NOT NULL, " + KEY_COMPLAINT_PHOTO_PATH + " TEXT, " + KEY_COMPLAINT_STATUS + " TEXT NOT NULL, " + KEY_CREATED_AT + " TEXT NOT NULL, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
+    private static final String CREATE_TABLE_COMPLAINTS = "CREATE TABLE " + TABLE_COMPLAINTS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ORDER_ID + " INTEGER, " + KEY_COMPLAINT_DESCRIPTION + " TEXT NOT NULL, " + KEY_COMPLAINT_PHOTO_PATH + " TEXT, " + KEY_COMPLAINT_STATUS + " TEXT NOT NULL, " + KEY_CREATED_AT + " TEXT NOT NULL, " + KEY_COMPLAINT_ADMIN_COMMENT + " TEXT, FOREIGN KEY(" + KEY_ORDER_ID + ") REFERENCES " + TABLE_ORDERS + "(" + KEY_ID + "));";
 
 
     public DatabaseHelper(Context context) {
@@ -75,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_USERS);
         db.execSQL(CREATE_TABLE_TECHNICIANS);
         db.execSQL(CREATE_TABLE_SERVICE_CATEGORIES);
+        // Table creation updated to include qris_path
         db.execSQL(CREATE_TABLE_SERVICES);
         db.execSQL(CREATE_TABLE_ORDERS);
         db.execSQL(CREATE_TABLE_PAYMENTS);
@@ -176,8 +181,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 {"Service Kulkas 1 Pintu", "Service Kulkas 2 Pintu", "Perbaikan Kulkas Tidak Dingin", "Isi Freon Kulkas", "Ganti Thermostat Kulkas"}
             };
 
+            // Update insert statement to include qris_path (can be null for seeding)
             SQLiteStatement serviceStmt = db.compileStatement(
-                    "INSERT INTO services (service_name, description, price, technician_id, category_id, image_path) VALUES (?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO services (service_name, description, price, technician_id, category_id, image_path, qris_path) VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
 
             for (int i = 1; i <= 25; i++) {
@@ -191,6 +197,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 serviceStmt.bindLong(4, (i % 20) + 1);   // technician
                 serviceStmt.bindLong(5, categoryIndex + 1);    // category (1-5)
                 serviceStmt.bindString(6, categoryImages[categoryIndex]); // image path
+                serviceStmt.bindString(7, "images/transactions/qris.jpeg"); // Default QRIS path
                 serviceStmt.executeInsert();
             }
             serviceStmt.close();
@@ -248,14 +255,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TECHNICIANS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICE_CATEGORIES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SERVICES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PAYMENTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_REVIEWS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COMPLAINTS);
-        onCreate(db);
+        if (oldVersion < 28) {
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_SERVICES + " ADD COLUMN " + KEY_QRIS_PATH + " TEXT");
+            } catch (Exception e) {
+                // Ignore if column already exists (e.g. erratic upgrade path)
+            }
+        }
+        if (oldVersion < 29) {
+            try {
+                // Update existing services to have default QRIS if null
+                db.execSQL("UPDATE " + TABLE_SERVICES + " SET " + KEY_QRIS_PATH + " = 'images/transactions/qris.png' WHERE " + KEY_QRIS_PATH + " IS NULL");
+            } catch (Exception e) {
+                // Ignore errors
+            }
+        }
+        if (oldVersion < 30) {
+            try {
+                // Update existing default QRIS paths to .jpeg
+                db.execSQL("UPDATE " + TABLE_SERVICES + " SET " + KEY_QRIS_PATH + " = 'images/transactions/qris.jpeg' WHERE " + KEY_QRIS_PATH + " = 'images/transactions/qris.png'");
+                // Also ensure any nulls get the new default
+                db.execSQL("UPDATE " + TABLE_SERVICES + " SET " + KEY_QRIS_PATH + " = 'images/transactions/qris.jpeg' WHERE " + KEY_QRIS_PATH + " IS NULL");
+            } catch (Exception e) {
+                // Ignore errors
+            }
+        }
+        // General fallback for development: if schema changes are too complex to migrate easily
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        // ... (rest of deletions)
+        // onCreate(db);
     }
 }

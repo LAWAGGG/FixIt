@@ -102,6 +102,13 @@ public class OrderDetailActivity extends AppCompatActivity {
             binding.textViewPaymentStatus.setTextColor(getResources().getColor(R.color.secondary));
         }
 
+        // Show QRIS if available
+        if (service != null && service.getQrisPath() != null && !service.getQrisPath().isEmpty()) {
+            setupQrisDisplay(service.getQrisPath());
+        } else {
+            binding.layoutQris.setVisibility(View.GONE);
+        }
+
         setupTimeline(order.getStatus());
         setupCompletionProof(order.getCompletionImage());
 
@@ -144,6 +151,34 @@ public class OrderDetailActivity extends AppCompatActivity {
         orderDataSource.close();
         serviceDataSource.close();
         technicianDataSource.close();
+    }
+    
+    // Add setupQrisDisplay method
+    private void setupQrisDisplay(String imagePath) {
+        if (imagePath != null && !imagePath.isEmpty()) {
+            binding.layoutQris.setVisibility(View.VISIBLE);
+            try {
+                if (imagePath.startsWith("images/")) {
+                    // Load from assets
+                    java.io.InputStream inputStream = getAssets().open(imagePath);
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    binding.imageViewQris.setImageBitmap(bitmap);
+                    inputStream.close();
+                } else {
+                    // Load from internal storage
+                    File imageFile = new File(getFilesDir(), imagePath);
+                    if (imageFile.exists()) {
+                        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                        binding.imageViewQris.setImageBitmap(bitmap);
+                    }
+                }
+            } catch (java.io.IOException e) {
+                 binding.layoutQris.setVisibility(View.GONE); // Hide if load fails
+                 e.printStackTrace();
+            }
+        } else {
+            binding.layoutQris.setVisibility(View.GONE);
+        }
     }
     
     private int getUserIdFromSession() {

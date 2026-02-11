@@ -44,6 +44,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         selectedFragment = new AdminTechniciansFragment();
                     } else if (itemId == R.id.nav_admin_categories) {
                         selectedFragment = new AdminCategoriesFragment();
+                    } else if (itemId == R.id.nav_admin_complaints) {
+                        selectedFragment = new com.example.fixit_v2.fragments.AdminComplaintsFragment();
                     } else if (itemId == R.id.nav_admin_profile) {
                         selectedFragment = new AdminProfileFragment();
                     }

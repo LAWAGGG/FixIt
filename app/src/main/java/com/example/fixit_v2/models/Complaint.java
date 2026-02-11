@@ -7,14 +7,21 @@ public class Complaint {
     private String photoPath;
     private String status;
     private String createdAt;
+    private String adminComment;
 
-    public Complaint(int id, int orderId, String description, String photoPath, String status, String createdAt) {
+    public Complaint(int id, int orderId, String description, String photoPath, String status, String createdAt, String adminComment) {
         this.id = id;
         this.orderId = orderId;
         this.description = description;
         this.photoPath = photoPath;
         this.status = status;
         this.createdAt = createdAt;
+        this.adminComment = adminComment;
+    }
+    
+    // Legacy constructor for backward compatibility
+    public Complaint(int id, int orderId, String description, String photoPath, String status, String createdAt) {
+        this(id, orderId, description, photoPath, status, createdAt, null);
     }
 
     public int getId() {
@@ -63,5 +70,13 @@ public class Complaint {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAdminComment() {
+        return adminComment;
+    }
+
+    public void setAdminComment(String adminComment) {
+        this.adminComment = adminComment;
     }
 }

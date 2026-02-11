@@ -23,7 +23,8 @@ public class ServiceDataSource {
         DatabaseHelper.KEY_PRICE, 
         DatabaseHelper.KEY_TECHNICIAN_ID, 
         DatabaseHelper.KEY_CATEGORY_ID,
-        DatabaseHelper.KEY_IMAGE_PATH
+        DatabaseHelper.KEY_IMAGE_PATH,
+        DatabaseHelper.KEY_QRIS_PATH
     };
 
     public ServiceDataSource(Context context) {
@@ -38,7 +39,7 @@ public class ServiceDataSource {
         dbHelper.close();
     }
 
-    public Service createService(String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
+    public Service createService(String serviceName, String description, double price, int technicianId, int categoryId, String imagePath, String qrisPath) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.KEY_SERVICE_NAME, serviceName);
         values.put(DatabaseHelper.KEY_DESCRIPTION, description);
@@ -46,12 +47,18 @@ public class ServiceDataSource {
         values.put(DatabaseHelper.KEY_TECHNICIAN_ID, technicianId);
         values.put(DatabaseHelper.KEY_CATEGORY_ID, categoryId);
         values.put(DatabaseHelper.KEY_IMAGE_PATH, imagePath);
+        values.put(DatabaseHelper.KEY_QRIS_PATH, qrisPath);
         long insertId = database.insert(DatabaseHelper.TABLE_SERVICES, null, values);
         Cursor cursor = database.query(DatabaseHelper.TABLE_SERVICES, allColumns, DatabaseHelper.KEY_ID + " = " + insertId, null, null, null, null);
         cursor.moveToFirst();
         Service newService = cursorToService(cursor);
         cursor.close();
         return newService;
+    }
+    
+    // Legacy overload for backward compatibility if needed
+    public Service createService(String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
+        return createService(serviceName, description, price, technicianId, categoryId, imagePath, null);
     }
 
     public List<Service> searchServicesByName(String keyword) {
@@ -137,7 +144,8 @@ public class ServiceDataSource {
             cursor.getDouble(3),   // price
             cursor.getInt(4),      // technician_id
             cursor.getInt(5),      // category_id
-            cursor.getString(6)    // image_path
+            cursor.getString(6),   // image_path
+            cursor.getString(7)    // qris_path
         );
     }
 }

@@ -33,6 +33,9 @@ public class CreateServiceActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
+    private Uri selectedQrisUri;
+    private ActivityResultLauncher<Intent> qrisPickerLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,10 +55,12 @@ public class CreateServiceActivity extends AppCompatActivity {
         serviceDataSource = new ServiceDataSource(this);
 
         setupImagePicker();
+        setupQrisPicker();
         setupToolbar();
         loadCategorySpinner();
         
         binding.buttonSelectImage.setOnClickListener(v -> openImagePicker());
+        binding.buttonSelectQris.setOnClickListener(v -> openQrisPicker());
         binding.buttonAddService.setOnClickListener(v -> addService());
     }
 
@@ -67,7 +72,21 @@ public class CreateServiceActivity extends AppCompatActivity {
                     selectedImageUri = result.getData().getData();
                     binding.imageViewPreview.setImageURI(selectedImageUri);
                     binding.imageViewPreview.setVisibility(View.VISIBLE);
-                    binding.buttonSelectImage.setText("Change Image");
+                    binding.buttonSelectImage.setText("Change Service Image");
+                }
+            }
+        );
+    }
+
+    private void setupQrisPicker() {
+        qrisPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedQrisUri = result.getData().getData();
+                    binding.imageViewQrisPreview.setImageURI(selectedQrisUri);
+                    binding.imageViewQrisPreview.setVisibility(View.VISIBLE);
+                    binding.buttonSelectQris.setText("Change QRIS Image");
                 }
             }
         );
@@ -76,6 +95,11 @@ public class CreateServiceActivity extends AppCompatActivity {
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
+    }
+
+    private void openQrisPicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        qrisPickerLauncher.launch(intent);
     }
 
     private void setupToolbar() {
@@ -90,8 +114,8 @@ public class CreateServiceActivity extends AppCompatActivity {
         binding.spinnerCategories.setAdapter(categoryAdapter);
     }
 
-    private String saveImageToInternalStorage(String serviceName) {
-        if (selectedImageUri == null) {
+    private String saveImageToInternalStorage(Uri uri, String serviceName, boolean isQris) {
+        if (uri == null) {
             return "";
         }
 
@@ -104,11 +128,12 @@ public class CreateServiceActivity extends AppCompatActivity {
 
             // Create filename from service name (sanitize)
             String sanitizedName = serviceName.replaceAll("[^a-zA-Z0-9]", "_").toLowerCase();
-            String filename = "service_" + sanitizedName + ".jpg";
+            String prefix = isQris ? "qris_" : "service_";
+            String filename = prefix + sanitizedName + "_" + System.currentTimeMillis() + ".jpg";
             File imageFile = new File(servicesDir, filename);
 
             // Copy image from URI to internal storage
-            InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
+            InputStream inputStream = getContentResolver().openInputStream(uri);
             FileOutputStream outputStream = new FileOutputStream(imageFile);
             
             byte[] buffer = new byte[1024];
@@ -138,6 +163,11 @@ public class CreateServiceActivity extends AppCompatActivity {
             Toast.makeText(this, "Please fill all required fields.", Toast.LENGTH_SHORT).show();
             return;
         }
+        
+        if (selectedQrisUri == null) {
+             Toast.makeText(this, "QRIS Image is required!", Toast.LENGTH_LONG).show();
+             return;
+        }
 
         ServiceCategory selectedCategory = null;
         for (ServiceCategory category : categoryList) {
@@ -155,11 +185,13 @@ public class CreateServiceActivity extends AppCompatActivity {
         try {
             double price = Double.parseDouble(priceString);
             
-            // Save image and get path
-            String imagePath = saveImageToInternalStorage(serviceName);
+            // Save images and get paths
+            String imagePath = (selectedImageUri != null) ? saveImageToInternalStorage(selectedImageUri, serviceName, false) : "";
+            String qrisPath = saveImageToInternalStorage(selectedQrisUri, serviceName, true);
             
             serviceDataSource.open();
-            serviceDataSource.createService(serviceName, description, price, technicianId, selectedCategory.getId(), imagePath);
+            // Using new createService method with qrisPath
+            serviceDataSource.createService(serviceName, description, price, technicianId, selectedCategory.getId(), imagePath, qrisPath);
             serviceDataSource.close();
             
             Toast.makeText(this, "Service added successfully!", Toast.LENGTH_SHORT).show();

@@ -23,7 +23,8 @@ public class ComplaintDataSource {
             DatabaseHelper.KEY_COMPLAINT_DESCRIPTION,
             DatabaseHelper.KEY_COMPLAINT_PHOTO_PATH,
             DatabaseHelper.KEY_COMPLAINT_STATUS,
-            DatabaseHelper.KEY_CREATED_AT
+            DatabaseHelper.KEY_CREATED_AT,
+            DatabaseHelper.KEY_COMPLAINT_ADMIN_COMMENT
     };
 
     public ComplaintDataSource(Context context) {
@@ -76,6 +77,13 @@ public class ComplaintDataSource {
         values.put(DatabaseHelper.KEY_COMPLAINT_STATUS, newStatus);
         return database.update(DatabaseHelper.TABLE_COMPLAINTS, values, DatabaseHelper.KEY_ID + " = ?", new String[]{String.valueOf(complaintId)});
     }
+    
+    public int updateComplaintStatusAndComment(int complaintId, String newStatus, String adminComment) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseHelper.KEY_COMPLAINT_STATUS, newStatus);
+        values.put(DatabaseHelper.KEY_COMPLAINT_ADMIN_COMMENT, adminComment);
+        return database.update(DatabaseHelper.TABLE_COMPLAINTS, values, DatabaseHelper.KEY_ID + " = ?", new String[]{String.valueOf(complaintId)});
+    }
 
     private Complaint cursorToComplaint(Cursor cursor) {
         return new Complaint(
@@ -84,7 +92,8 @@ public class ComplaintDataSource {
                 cursor.getString(2),
                 cursor.getString(3),
                 cursor.getString(4),
-                cursor.getString(5)
+                cursor.getString(5),
+                cursor.getString(6) // admin_comment
         );
     }
 }

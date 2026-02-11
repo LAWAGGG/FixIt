@@ -140,13 +140,41 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Select Image"
+                    android:text="Select Service Image"
                     android:textColor="@color/white"
                     android:backgroundTint="#555555"
                     style="@style/Widget.Material3.Button.OutlinedButton"/>
 
                 <ImageView
                     android:id="@+id/imageViewPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_marginTop="8dp"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"
+                    android:background="@drawable/input_field_background"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="QRIS Image (Required)"
+                    android:textColor="#FF9800"
+                    android:textStyle="bold"
+                    android:textSize="14sp"/>
+
+                <Button
+                    android:id="@+id/buttonSelectQris"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Upload QRIS"
+                    android:textColor="@color/white"
+                    android:backgroundTint="#555555"
+                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                <ImageView
+                    android:id="@+id/imageViewQrisPreview"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
                     android:layout_marginTop="8dp"

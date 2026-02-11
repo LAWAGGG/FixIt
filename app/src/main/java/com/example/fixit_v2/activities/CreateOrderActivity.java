@@ -37,6 +37,8 @@ public class CreateOrderActivity extends AppCompatActivity {
     private String userBankDetails = "";
     private final Calendar calendar = Calendar.getInstance();
 
+    private Service service; // Promoted to field
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +69,7 @@ public class CreateOrderActivity extends AppCompatActivity {
 
     private void loadServiceInfo() {
         serviceDataSource.open();
-        Service service = serviceDataSource.getServiceById(serviceId);
+        service = serviceDataSource.getServiceById(serviceId);
         if (service != null) {
             binding.textViewServiceName.setText(service.getServiceName());
             binding.textViewServicePrice.setText(String.format(Locale.GERMAN, "Rp %,d", (long) service.getPrice()));
@@ -122,10 +124,47 @@ public class CreateOrderActivity extends AppCompatActivity {
     }
 
     private void showQrisPaymentSheet() {
-        // This logic remains the same, but you might want to modernize its layout too.
         final BottomSheetDialog qrisSheet = new BottomSheetDialog(this);
         View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_qris_payment, null);
         qrisSheet.setContentView(sheetView);
+
+        android.widget.ImageView imageViewQris = sheetView.findViewById(R.id.imageViewQrisCode);
+        android.widget.TextView textViewNoQris = sheetView.findViewById(R.id.textViewNoQris);
+
+        if (service != null && service.getQrisPath() != null && !service.getQrisPath().isEmpty()) {
+            String qrisPath = service.getQrisPath();
+            try {
+                if (qrisPath.startsWith("images/")) {
+                    // Load from assets
+                    java.io.InputStream inputStream = getAssets().open(qrisPath);
+                    android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
+                    imageViewQris.setImageBitmap(bitmap);
+                    imageViewQris.setVisibility(View.VISIBLE);
+                    textViewNoQris.setVisibility(View.GONE);
+                    inputStream.close();
+                } else {
+                    // Load from internal storage
+                    java.io.File imgFile = new java.io.File(getFilesDir(), qrisPath);
+                    if (imgFile.exists()) {
+                        android.graphics.Bitmap myBitmap = android.graphics.BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                        imageViewQris.setImageBitmap(myBitmap);
+                        imageViewQris.setVisibility(View.VISIBLE);
+                        textViewNoQris.setVisibility(View.GONE);
+                    } else {
+                         imageViewQris.setVisibility(View.GONE);
+                         textViewNoQris.setVisibility(View.VISIBLE);
+                    }
+                }
+            } catch (java.io.IOException e) {
+                imageViewQris.setVisibility(View.GONE);
+                textViewNoQris.setVisibility(View.VISIBLE);
+                e.printStackTrace();
+            }
+        } else {
+            imageViewQris.setVisibility(View.GONE);
+            textViewNoQris.setVisibility(View.VISIBLE);
+        }
+
         sheetView.findViewById(R.id.buttonConfirmQris).setOnClickListener(v -> {
             selectedPaymentMethod = "QRIS";
             binding.textViewSelectedPayment.setText(selectedPaymentMethod);

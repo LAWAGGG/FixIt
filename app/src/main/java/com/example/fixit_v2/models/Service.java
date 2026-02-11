@@ -13,8 +13,9 @@ public class Service {
     private int technicianId;
     private int categoryId;
     private String imagePath;
+    private String qrisPath; // New field for QRIS
 
-    public Service(int id, String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
+    public Service(int id, String serviceName, String description, double price, int technicianId, int categoryId, String imagePath, String qrisPath) {
         this.id = id;
         this.serviceName = serviceName;
         this.description = description;
@@ -22,6 +23,12 @@ public class Service {
         this.technicianId = technicianId;
         this.categoryId = categoryId;
         this.imagePath = imagePath;
+        this.qrisPath = qrisPath;
+    }
+    
+    // Legacy constructor for backward compatibility if needed, but better to update calls
+    public Service(int id, String serviceName, String description, double price, int technicianId, int categoryId, String imagePath) {
+        this(id, serviceName, description, price, technicianId, categoryId, imagePath, null);
     }
 
     // Getters and Setters
@@ -79,6 +86,14 @@ public class Service {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+    
+    public String getQrisPath() {
+        return qrisPath;
+    }
+
+    public void setQrisPath(String qrisPath) {
+        this.qrisPath = qrisPath;
     }
 
     @NonNull
